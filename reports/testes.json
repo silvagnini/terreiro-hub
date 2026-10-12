@@ -1,0 +1,639 @@
+{
+  "gerado_em": "2026-10-12T02:20:52.916Z",
+  "suites": [
+    {
+      "id": "integracao",
+      "nome": "Integração (histórias)",
+      "glob": "test/api/**/*.test.js",
+      "total": 38,
+      "passaram": 38,
+      "falharam": 0,
+      "duracao_ms": 11952,
+      "codigo_saida": 0,
+      "testes": [
+        {
+          "nome": "US-01: Admin cadastra terreiro em teste por 30 dias e convida o sacerdote",
+          "arquivo": "api/e1_admin.test.js",
+          "ok": true,
+          "duracao_ms": 185,
+          "erro": null
+        },
+        {
+          "nome": "US-02: Plano com limite avisa aos 90% e pede upgrade aos 100%",
+          "arquivo": "api/e1_admin.test.js",
+          "ok": true,
+          "duracao_ms": 156,
+          "erro": null
+        },
+        {
+          "nome": "US-03: Fatura do SaaS é gerada no fim do teste e baixada pelo webhook",
+          "arquivo": "api/e1_admin.test.js",
+          "ok": true,
+          "duracao_ms": 157,
+          "erro": null
+        },
+        {
+          "nome": "US-04: Régua de inadimplência: aviso (5d), somente leitura (15d), bloqueio (30d); filhos continuam pagando",
+          "arquivo": "api/e1_admin.test.js",
+          "ok": true,
+          "duracao_ms": 386,
+          "erro": null
+        },
+        {
+          "nome": "US-05: Admin bloqueia com motivo, desbloqueia e encerra com exportação",
+          "arquivo": "api/e1_admin.test.js",
+          "ok": true,
+          "duracao_ms": 199,
+          "erro": null
+        },
+        {
+          "nome": "RF-06: Métricas do SaaS (MRR, inadimplência, filhos)",
+          "arquivo": "api/e1_admin.test.js",
+          "ok": true,
+          "duracao_ms": 8,
+          "erro": null
+        },
+        {
+          "nome": "US-06: Assistente de primeiro acesso com 4 etapas que podem ser puladas",
+          "arquivo": "api/e2_e3_terreiro_filhos.test.js",
+          "ok": true,
+          "duracao_ms": 213,
+          "erro": null
+        },
+        {
+          "nome": "US-07: Sem conta aprovada a cobrança fica aguardando; ao aprovar ela é enviada",
+          "arquivo": "api/e2_e3_terreiro_filhos.test.js",
+          "ok": true,
+          "duracao_ms": 145,
+          "erro": null
+        },
+        {
+          "nome": "US-08: Catálogo de serviços preenche o valor sugerido, que pode ser alterado",
+          "arquivo": "api/e2_e3_terreiro_filhos.test.js",
+          "ok": true,
+          "duracao_ms": 152,
+          "erro": null
+        },
+        {
+          "nome": "US-09: Orixás e entidades editáveis só afetam a própria casa",
+          "arquivo": "api/e2_e3_terreiro_filhos.test.js",
+          "ok": true,
+          "duracao_ms": 227,
+          "erro": null
+        },
+        {
+          "nome": "US-10: Cadastro exige nome e telefone e recusa telefone repetido na casa",
+          "arquivo": "api/e2_e3_terreiro_filhos.test.js",
+          "ok": true,
+          "duracao_ms": 130,
+          "erro": null
+        },
+        {
+          "nome": "US-11: Convite por WhatsApp com link válido por 7 dias e status visível",
+          "arquivo": "api/e2_e3_terreiro_filhos.test.js",
+          "ok": true,
+          "duracao_ms": 156,
+          "erro": null
+        },
+        {
+          "nome": "US-12: Filho só entra aceitando o termo; aceite gravado com data, hora e versão",
+          "arquivo": "api/e2_e3_terreiro_filhos.test.js",
+          "ok": true,
+          "duracao_ms": 173,
+          "erro": null
+        },
+        {
+          "nome": "US-13: Bloqueio suspende acesso e novas mensalidades, mantém as pendências",
+          "arquivo": "api/e2_e3_terreiro_filhos.test.js",
+          "ok": true,
+          "duracao_ms": 225,
+          "erro": null
+        },
+        {
+          "nome": "US-14: Desligar preserva histórico; exclusão só a pedido do titular, com anonimização",
+          "arquivo": "api/e2_e3_terreiro_filhos.test.js",
+          "ok": true,
+          "duracao_ms": 191,
+          "erro": null
+        },
+        {
+          "nome": "US-15: Grupos direcionam avisos e cobranças",
+          "arquivo": "api/e2_e3_terreiro_filhos.test.js",
+          "ok": true,
+          "duracao_ms": 312,
+          "erro": null
+        },
+        {
+          "nome": "US-16: Aviso para filhos específicos; fixado fica no topo até a validade",
+          "arquivo": "api/e4_e5_mural_agenda.test.js",
+          "ok": true,
+          "duracao_ms": 271,
+          "erro": null
+        },
+        {
+          "nome": "US-17: Comunicado de gira pela agenda com confirmação de presença em tempo real",
+          "arquivo": "api/e4_e5_mural_agenda.test.js",
+          "ok": true,
+          "duracao_ms": 238,
+          "erro": null
+        },
+        {
+          "nome": "US-18: Notificação push tem texto neutro, sem termos religiosos",
+          "arquivo": "api/e4_e5_mural_agenda.test.js",
+          "ok": true,
+          "duracao_ms": 106,
+          "erro": null
+        },
+        {
+          "nome": "US-19: Calendário traz giras, trabalhos, búzios e festas com cor por tipo",
+          "arquivo": "api/e4_e5_mural_agenda.test.js",
+          "ok": true,
+          "duracao_ms": 53,
+          "erro": null
+        },
+        {
+          "nome": "US-20: Gira recorrente semanal e cancelamento de uma data só",
+          "arquivo": "api/e4_e5_mural_agenda.test.js",
+          "ok": true,
+          "duracao_ms": 40,
+          "erro": null
+        },
+        {
+          "nome": "US-21: Búzios com horários disponíveis, sem dupla marcação e com datas bloqueadas",
+          "arquivo": "api/e4_e5_mural_agenda.test.js",
+          "ok": true,
+          "duracao_ms": 161,
+          "erro": null
+        },
+        {
+          "nome": "US-22: Mensalidade configurada uma vez é gerada todo mês, sem duplicar, com entrada proporcional",
+          "arquivo": "api/e6_e9_financeiro.test.js",
+          "ok": true,
+          "duracao_ms": 329,
+          "erro": null
+        },
+        {
+          "nome": "US-23: Lote com prévia; cada filho recebe cobrança independente",
+          "arquivo": "api/e6_e9_financeiro.test.js",
+          "ok": true,
+          "duracao_ms": 268,
+          "erro": null
+        },
+        {
+          "nome": "US-24: Trabalho individual cria evento, cobrança e aviso ligados; cancelar pergunta pela cobrança",
+          "arquivo": "api/e6_e9_financeiro.test.js",
+          "ok": true,
+          "duracao_ms": 445,
+          "erro": null
+        },
+        {
+          "nome": "US-25: Baixa manual em dinheiro, registrada na auditoria",
+          "arquivo": "api/e6_e9_financeiro.test.js",
+          "ok": true,
+          "duracao_ms": 136,
+          "erro": null
+        },
+        {
+          "nome": "US-26: Cancelamento exige motivo; paga só pode ser estornada",
+          "arquivo": "api/e6_e9_financeiro.test.js",
+          "ok": true,
+          "duracao_ms": 208,
+          "erro": null
+        },
+        {
+          "nome": "US-27: Isenção e desconto aplicados na mensalidade",
+          "arquivo": "api/e6_e9_financeiro.test.js",
+          "ok": true,
+          "duracao_ms": 182,
+          "erro": null
+        },
+        {
+          "nome": "US-28: Filho paga por Pix; webhook dá baixa, emite recibo e não duplica",
+          "arquivo": "api/e6_e9_financeiro.test.js",
+          "ok": true,
+          "duracao_ms": 293,
+          "erro": null
+        },
+        {
+          "nome": "US-29: Dashboard bate com a soma de cobranças e despesas do mês",
+          "arquivo": "api/e6_e9_financeiro.test.js",
+          "ok": true,
+          "duracao_ms": 238,
+          "erro": null
+        },
+        {
+          "nome": "US-30: Início do filho mostra só os dados dele, com vencidas em destaque",
+          "arquivo": "api/e6_e9_financeiro.test.js",
+          "ok": true,
+          "duracao_ms": 316,
+          "erro": null
+        },
+        {
+          "nome": "RN-01: Sacerdote de uma casa não enxerga nada de outra",
+          "arquivo": "api/seguranca.test.js",
+          "ok": true,
+          "duracao_ms": 323,
+          "erro": null
+        },
+        {
+          "nome": "RN-07: Filho só vê os próprios dados; dados espirituais em modo leitura",
+          "arquivo": "api/seguranca.test.js",
+          "ok": true,
+          "duracao_ms": 233,
+          "erro": null
+        },
+        {
+          "nome": "LGPD: filho baixa os próprios dados e revoga o consentimento religioso",
+          "arquivo": "api/seguranca.test.js",
+          "ok": true,
+          "duracao_ms": 228,
+          "erro": null
+        },
+        {
+          "nome": "RF-14: Auxiliar tem só as permissões que o sacerdote liberar",
+          "arquivo": "api/seguranca.test.js",
+          "ok": true,
+          "duracao_ms": 212,
+          "erro": null
+        },
+        {
+          "nome": "RNF-04: Login bloqueia por 15 minutos após 5 tentativas erradas",
+          "arquivo": "api/seguranca.test.js",
+          "ok": true,
+          "duracao_ms": 414,
+          "erro": null
+        },
+        {
+          "nome": "RF-07: Admin só entra no terreiro com consentimento do sacerdote",
+          "arquivo": "api/seguranca.test.js",
+          "ok": true,
+          "duracao_ms": 120,
+          "erro": null
+        },
+        {
+          "nome": "Entradas inválidas retornam 400/404, nunca 500",
+          "arquivo": "api/seguranca.test.js",
+          "ok": true,
+          "duracao_ms": 138,
+          "erro": null
+        }
+      ]
+    },
+    {
+      "id": "interface",
+      "nome": "Interface (PWA)",
+      "glob": "test/ui/**/*.test.js",
+      "total": 7,
+      "passaram": 7,
+      "falharam": 0,
+      "duracao_ms": 5093,
+      "codigo_saida": 0,
+      "testes": [
+        {
+          "nome": "UI-01: Login pelo formulário leva ao início do sacerdote",
+          "arquivo": "ui/telas.test.js",
+          "ok": true,
+          "duracao_ms": 519,
+          "erro": null
+        },
+        {
+          "nome": "UI-02: Todas as telas do sacerdote abrem sem erro",
+          "arquivo": "ui/telas.test.js",
+          "ok": true,
+          "duracao_ms": 785,
+          "erro": null
+        },
+        {
+          "nome": "UI-03: Texto digitado pelo usuário é exibido como texto (sem injeção de HTML)",
+          "arquivo": "ui/telas.test.js",
+          "ok": true,
+          "duracao_ms": 58,
+          "erro": null
+        },
+        {
+          "nome": "UI-04: Publicar aviso pelo formulário",
+          "arquivo": "ui/telas.test.js",
+          "ok": true,
+          "duracao_ms": 553,
+          "erro": null
+        },
+        {
+          "nome": "UI-05: Cadastrar filho pelo formulário",
+          "arquivo": "ui/telas.test.js",
+          "ok": true,
+          "duracao_ms": 492,
+          "erro": null
+        },
+        {
+          "nome": "UI-06: Telas do filho abrem e mostram só os dados dele",
+          "arquivo": "ui/telas.test.js",
+          "ok": true,
+          "duracao_ms": 306,
+          "erro": null
+        },
+        {
+          "nome": "UI-07: Painel do admin e convite abrem sem erro",
+          "arquivo": "ui/telas.test.js",
+          "ok": true,
+          "duracao_ms": 563,
+          "erro": null
+        }
+      ]
+    },
+    {
+      "id": "unitarios",
+      "nome": "Unitários",
+      "glob": "test/unit/**/*.test.js",
+      "total": 9,
+      "passaram": 9,
+      "falharam": 0,
+      "duracao_ms": 401,
+      "codigo_saida": 0,
+      "testes": [
+        {
+          "nome": "CPF e CNPJ: aceita válidos e recusa repetidos/inválidos",
+          "arquivo": "unit/regras.test.js",
+          "ok": true,
+          "duracao_ms": 2,
+          "erro": null
+        },
+        {
+          "nome": "Telefone ganha DDI 55 e recusa tamanhos inválidos",
+          "arquivo": "unit/regras.test.js",
+          "ok": true,
+          "duracao_ms": 1,
+          "erro": null
+        },
+        {
+          "nome": "Datas: dias no mês, fim de mês e soma de dias",
+          "arquivo": "unit/regras.test.js",
+          "ok": true,
+          "duracao_ms": 1,
+          "erro": null
+        },
+        {
+          "nome": "RN-09: status pela quantidade de dias em atraso",
+          "arquivo": "unit/regras.test.js",
+          "ok": true,
+          "duracao_ms": 0,
+          "erro": null
+        },
+        {
+          "nome": "US-22: mensalidade integral x proporcional na entrada",
+          "arquivo": "unit/regras.test.js",
+          "ok": true,
+          "duracao_ms": 0,
+          "erro": null
+        },
+        {
+          "nome": "US-27: desconto em valor e percentual, nunca maior que o valor",
+          "arquivo": "unit/regras.test.js",
+          "ok": true,
+          "duracao_ms": 0,
+          "erro": null
+        },
+        {
+          "nome": "Situação \"vencida\" é derivada de aberta + vencimento passado",
+          "arquivo": "unit/regras.test.js",
+          "ok": true,
+          "duracao_ms": 0,
+          "erro": null
+        },
+        {
+          "nome": "US-20: recorrência semanal respeita data final, intervalo e teto",
+          "arquivo": "unit/regras.test.js",
+          "ok": true,
+          "duracao_ms": 43,
+          "erro": null
+        },
+        {
+          "nome": "Pix copia e cola segue o padrão EMV com CRC16 correto",
+          "arquivo": "unit/regras.test.js",
+          "ok": true,
+          "duracao_ms": 2,
+          "erro": null
+        }
+      ]
+    },
+    {
+      "id": "contrato",
+      "nome": "Contrato (OpenAPI e gateway)",
+      "glob": "test/contract/**/*.test.js",
+      "total": 8,
+      "passaram": 8,
+      "falharam": 0,
+      "duracao_ms": 4391,
+      "codigo_saida": 0,
+      "testes": [
+        {
+          "nome": "CG-01: Adaptador simulado e Asaas expõem a mesma interface",
+          "arquivo": "contract/gateway.test.js",
+          "ok": true,
+          "duracao_ms": 2,
+          "erro": null
+        },
+        {
+          "nome": "CG-02: Cobrança e subconta do simulador seguem o schema do contrato",
+          "arquivo": "contract/gateway.test.js",
+          "ok": true,
+          "duracao_ms": 9,
+          "erro": null
+        },
+        {
+          "nome": "CG-03: Eventos gerados pelo simulador obedecem ao formato de webhook do Asaas",
+          "arquivo": "contract/gateway.test.js",
+          "ok": true,
+          "duracao_ms": 7,
+          "erro": null
+        },
+        {
+          "nome": "CG-04: Receptor aceita os eventos documentados do Asaas e ignora os demais",
+          "arquivo": "contract/gateway.test.js",
+          "ok": true,
+          "duracao_ms": 411,
+          "erro": null
+        },
+        {
+          "nome": "CG-05: Pagamento desconhecido não quebra o receptor; repetição é idempotente",
+          "arquivo": "contract/gateway.test.js",
+          "ok": true,
+          "duracao_ms": 23,
+          "erro": null
+        },
+        {
+          "nome": "CT-01: Toda rota do servidor está documentada no openapi.json (e vice-versa)",
+          "arquivo": "contract/openapi.test.js",
+          "ok": true,
+          "duracao_ms": 5,
+          "erro": null
+        },
+        {
+          "nome": "CT-02: Respostas reais obedecem aos schemas em todo o ciclo de uso",
+          "arquivo": "contract/openapi.test.js",
+          "ok": true,
+          "duracao_ms": 2330,
+          "erro": null
+        },
+        {
+          "nome": "CT-03: Cobertura do contrato ≥ 95% das operações exercitadas",
+          "arquivo": "contract/openapi.test.js",
+          "ok": true,
+          "duracao_ms": 1,
+          "erro": null
+        }
+      ]
+    }
+  ],
+  "historias": {
+    "US-22": {
+      "ok": true,
+      "teste": "US-22: Mensalidade configurada uma vez é gerada todo mês, sem duplicar, com entrada proporcional",
+      "suite": "integracao"
+    },
+    "US-27": {
+      "ok": true,
+      "teste": "US-27: Isenção e desconto aplicados na mensalidade",
+      "suite": "integracao"
+    },
+    "US-20": {
+      "ok": true,
+      "teste": "US-20: Gira recorrente semanal e cancelamento de uma data só",
+      "suite": "integracao"
+    },
+    "US-01": {
+      "ok": true,
+      "teste": "US-01: Admin cadastra terreiro em teste por 30 dias e convida o sacerdote",
+      "suite": "integracao"
+    },
+    "US-02": {
+      "ok": true,
+      "teste": "US-02: Plano com limite avisa aos 90% e pede upgrade aos 100%",
+      "suite": "integracao"
+    },
+    "US-03": {
+      "ok": true,
+      "teste": "US-03: Fatura do SaaS é gerada no fim do teste e baixada pelo webhook",
+      "suite": "integracao"
+    },
+    "US-04": {
+      "ok": true,
+      "teste": "US-04: Régua de inadimplência: aviso (5d), somente leitura (15d), bloqueio (30d); filhos continuam pagando",
+      "suite": "integracao"
+    },
+    "US-05": {
+      "ok": true,
+      "teste": "US-05: Admin bloqueia com motivo, desbloqueia e encerra com exportação",
+      "suite": "integracao"
+    },
+    "US-06": {
+      "ok": true,
+      "teste": "US-06: Assistente de primeiro acesso com 4 etapas que podem ser puladas",
+      "suite": "integracao"
+    },
+    "US-07": {
+      "ok": true,
+      "teste": "US-07: Sem conta aprovada a cobrança fica aguardando; ao aprovar ela é enviada",
+      "suite": "integracao"
+    },
+    "US-08": {
+      "ok": true,
+      "teste": "US-08: Catálogo de serviços preenche o valor sugerido, que pode ser alterado",
+      "suite": "integracao"
+    },
+    "US-09": {
+      "ok": true,
+      "teste": "US-09: Orixás e entidades editáveis só afetam a própria casa",
+      "suite": "integracao"
+    },
+    "US-10": {
+      "ok": true,
+      "teste": "US-10: Cadastro exige nome e telefone e recusa telefone repetido na casa",
+      "suite": "integracao"
+    },
+    "US-11": {
+      "ok": true,
+      "teste": "US-11: Convite por WhatsApp com link válido por 7 dias e status visível",
+      "suite": "integracao"
+    },
+    "US-12": {
+      "ok": true,
+      "teste": "US-12: Filho só entra aceitando o termo; aceite gravado com data, hora e versão",
+      "suite": "integracao"
+    },
+    "US-13": {
+      "ok": true,
+      "teste": "US-13: Bloqueio suspende acesso e novas mensalidades, mantém as pendências",
+      "suite": "integracao"
+    },
+    "US-14": {
+      "ok": true,
+      "teste": "US-14: Desligar preserva histórico; exclusão só a pedido do titular, com anonimização",
+      "suite": "integracao"
+    },
+    "US-15": {
+      "ok": true,
+      "teste": "US-15: Grupos direcionam avisos e cobranças",
+      "suite": "integracao"
+    },
+    "US-16": {
+      "ok": true,
+      "teste": "US-16: Aviso para filhos específicos; fixado fica no topo até a validade",
+      "suite": "integracao"
+    },
+    "US-17": {
+      "ok": true,
+      "teste": "US-17: Comunicado de gira pela agenda com confirmação de presença em tempo real",
+      "suite": "integracao"
+    },
+    "US-18": {
+      "ok": true,
+      "teste": "US-18: Notificação push tem texto neutro, sem termos religiosos",
+      "suite": "integracao"
+    },
+    "US-19": {
+      "ok": true,
+      "teste": "US-19: Calendário traz giras, trabalhos, búzios e festas com cor por tipo",
+      "suite": "integracao"
+    },
+    "US-21": {
+      "ok": true,
+      "teste": "US-21: Búzios com horários disponíveis, sem dupla marcação e com datas bloqueadas",
+      "suite": "integracao"
+    },
+    "US-23": {
+      "ok": true,
+      "teste": "US-23: Lote com prévia; cada filho recebe cobrança independente",
+      "suite": "integracao"
+    },
+    "US-24": {
+      "ok": true,
+      "teste": "US-24: Trabalho individual cria evento, cobrança e aviso ligados; cancelar pergunta pela cobrança",
+      "suite": "integracao"
+    },
+    "US-25": {
+      "ok": true,
+      "teste": "US-25: Baixa manual em dinheiro, registrada na auditoria",
+      "suite": "integracao"
+    },
+    "US-26": {
+      "ok": true,
+      "teste": "US-26: Cancelamento exige motivo; paga só pode ser estornada",
+      "suite": "integracao"
+    },
+    "US-28": {
+      "ok": true,
+      "teste": "US-28: Filho paga por Pix; webhook dá baixa, emite recibo e não duplica",
+      "suite": "integracao"
+    },
+    "US-29": {
+      "ok": true,
+      "teste": "US-29: Dashboard bate com a soma de cobranças e despesas do mês",
+      "suite": "integracao"
+    },
+    "US-30": {
+      "ok": true,
+      "teste": "US-30: Início do filho mostra só os dados dele, com vencidas em destaque",
+      "suite": "integracao"
+    }
+  }
+}

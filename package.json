@@ -1,0 +1,31 @@
+{
+  "name": "terreiro-hub",
+  "version": "1.0.0",
+  "description": "Plataforma SaaS de gestão de terreiros (PWA)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node scripts/rodar-testes.js",
+    "test:unit": "node scripts/rodar-testes.js unitarios",
+    "test:api": "node scripts/rodar-testes.js integracao",
+    "test:ui": "node scripts/rodar-testes.js interface",
+    "test:contrato": "node scripts/rodar-testes.js contrato",
+    "carga": "node load/rodar-carga.js",
+    "openapi": "node scripts/gerar-openapi.js"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "express": "^4.22.3",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "autocannon": "^7.15.0",
+    "jsdom": "^25.0.1"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  }
+}

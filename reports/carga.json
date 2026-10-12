@@ -1,0 +1,148 @@
+{
+  "gerado_em": "2026-10-12T02:22:31.904Z",
+  "ambiente": {
+    "cpus": 2,
+    "modelo_cpu": "Intel(R) Xeon(R) Processor @ 2.80GHz",
+    "memoria_gb": 8,
+    "node": "v22.22.0",
+    "postgres": "16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)",
+    "shared_buffers": "256MB",
+    "observacao": "Servidor, banco e gerador de carga na mesma máquina; os números são um piso conservador.",
+    "duracao_cenario_s": 15,
+    "conexoes": 20
+  },
+  "degraus": [
+    {
+      "terreiros": 51,
+      "filhos": 5300,
+      "cobrancas": 98166,
+      "eventos": 5355,
+      "avisos": 6120,
+      "despesas": 12240,
+      "tamanho_mb": 68,
+      "terreiros_carga": 51,
+      "semeadura_s": 6,
+      "cenarios": [
+        {
+          "cenario": "Dashboard do sacerdote",
+          "conexoes": 20,
+          "requisicoes": 2584,
+          "rps": 172,
+          "p50_ms": 113,
+          "p90_ms": 138,
+          "p97_5_ms": 158,
+          "p99_ms": 176,
+          "max_ms": 324,
+          "erros": 0,
+          "nao_2xx": 0
+        },
+        {
+          "cenario": "Dashboard · casa de 300 filhos (RNF-07)",
+          "conexoes": 20,
+          "requisicoes": 1864,
+          "rps": 124,
+          "p50_ms": 155,
+          "p90_ms": 196,
+          "p97_5_ms": 229,
+          "p99_ms": 247,
+          "max_ms": 490,
+          "erros": 0,
+          "nao_2xx": 0
+        },
+        {
+          "cenario": "Lista de filhos",
+          "conexoes": 20,
+          "requisicoes": 5447,
+          "rps": 363,
+          "p50_ms": 53,
+          "p90_ms": 71,
+          "p97_5_ms": 81,
+          "p99_ms": 87,
+          "max_ms": 157,
+          "erros": 0,
+          "nao_2xx": 0
+        },
+        {
+          "cenario": "Cobranças vencidas",
+          "conexoes": 20,
+          "requisicoes": 4663,
+          "rps": 311,
+          "p50_ms": 62,
+          "p90_ms": 82,
+          "p97_5_ms": 95,
+          "p99_ms": 103,
+          "max_ms": 195,
+          "erros": 0,
+          "nao_2xx": 0
+        },
+        {
+          "cenario": "Início do filho",
+          "conexoes": 20,
+          "requisicoes": 3471,
+          "rps": 231,
+          "p50_ms": 84,
+          "p90_ms": 104,
+          "p97_5_ms": 121,
+          "p99_ms": 129,
+          "max_ms": 224,
+          "erros": 0,
+          "nao_2xx": 0
+        },
+        {
+          "cenario": "Mural do filho",
+          "conexoes": 20,
+          "requisicoes": 5350,
+          "rps": 357,
+          "p50_ms": 54,
+          "p90_ms": 71,
+          "p97_5_ms": 83,
+          "p99_ms": 92,
+          "max_ms": 155,
+          "erros": 0,
+          "nao_2xx": 0
+        },
+        {
+          "cenario": "Criar cobrança (escrita)",
+          "conexoes": 20,
+          "requisicoes": 4075,
+          "rps": 272,
+          "p50_ms": 71,
+          "p90_ms": 91,
+          "p97_5_ms": 105,
+          "p99_ms": 114,
+          "max_ms": 210,
+          "erros": 0,
+          "nao_2xx": 0
+        },
+        {
+          "cenario": "Webhook de pagamento (escrita)",
+          "conexoes": 20,
+          "requisicoes": 8748,
+          "rps": 583,
+          "p50_ms": 32,
+          "p90_ms": 44,
+          "p97_5_ms": 55,
+          "p99_ms": 63,
+          "max_ms": 89,
+          "erros": 0,
+          "nao_2xx": 0
+        },
+        {
+          "cenario": "Métricas globais do admin",
+          "conexoes": 20,
+          "requisicoes": 9034,
+          "rps": 602,
+          "p50_ms": 31,
+          "p90_ms": 44,
+          "p97_5_ms": 53,
+          "p99_ms": 58,
+          "max_ms": 120,
+          "erros": 0,
+          "nao_2xx": 0
+        }
+      ]
+    }
+  ],
+  "rampa": [],
+  "duracao_total_s": 170
+}
