@@ -1,0 +1,436 @@
+[
+ {
+  "suite": "Unitários",
+  "teste": "CPF e CNPJ: aceita válidos e recusa repetidos/inválidos",
+  "resultado": "Passou",
+  "duracao_ms": 2,
+  "erro": ""
+ },
+ {
+  "suite": "Unitários",
+  "teste": "Telefone ganha DDI 55 e recusa tamanhos inválidos",
+  "resultado": "Passou",
+  "duracao_ms": 1,
+  "erro": ""
+ },
+ {
+  "suite": "Unitários",
+  "teste": "Datas: dias no mês, fim de mês e soma de dias",
+  "resultado": "Passou",
+  "duracao_ms": 1,
+  "erro": ""
+ },
+ {
+  "suite": "Unitários",
+  "teste": "RN-09: status pela quantidade de dias em atraso",
+  "resultado": "Passou",
+  "duracao_ms": 0,
+  "erro": ""
+ },
+ {
+  "suite": "Unitários",
+  "teste": "US-22: mensalidade integral x proporcional na entrada",
+  "resultado": "Passou",
+  "duracao_ms": 0,
+  "erro": ""
+ },
+ {
+  "suite": "Unitários",
+  "teste": "US-27: desconto em valor e percentual, nunca maior que o valor",
+  "resultado": "Passou",
+  "duracao_ms": 0,
+  "erro": ""
+ },
+ {
+  "suite": "Unitários",
+  "teste": "Situação \"vencida\" é derivada de aberta + vencimento passado",
+  "resultado": "Passou",
+  "duracao_ms": 0,
+  "erro": ""
+ },
+ {
+  "suite": "Unitários",
+  "teste": "US-20: recorrência semanal respeita data final, intervalo e teto",
+  "resultado": "Passou",
+  "duracao_ms": 37,
+  "erro": ""
+ },
+ {
+  "suite": "Unitários",
+  "teste": "Pix copia e cola segue o padrão EMV com CRC16 correto",
+  "resultado": "Passou",
+  "duracao_ms": 2,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-01: Admin cadastra terreiro em teste por 30 dias e convida o sacerdote",
+  "resultado": "Passou",
+  "duracao_ms": 219,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-02: Plano com limite avisa aos 90% e pede upgrade aos 100%",
+  "resultado": "Passou",
+  "duracao_ms": 211,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-03: Fatura do SaaS é gerada no fim do teste e baixada pelo webhook",
+  "resultado": "Passou",
+  "duracao_ms": 259,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-04: Régua de inadimplência: aviso (5d), somente leitura (15d), bloqueio (30d); filhos continuam pagando",
+  "resultado": "Passou",
+  "duracao_ms": 482,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-05: Admin bloqueia com motivo, desbloqueia e encerra com exportação",
+  "resultado": "Passou",
+  "duracao_ms": 190,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "RF-06: Métricas do SaaS (MRR, inadimplência, filhos)",
+  "resultado": "Passou",
+  "duracao_ms": 8,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-06: Assistente de primeiro acesso com 4 etapas que podem ser puladas",
+  "resultado": "Passou",
+  "duracao_ms": 168,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-07: Sem conta aprovada a cobrança fica aguardando; ao aprovar ela é enviada",
+  "resultado": "Passou",
+  "duracao_ms": 134,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-08: Catálogo de serviços preenche o valor sugerido, que pode ser alterado",
+  "resultado": "Passou",
+  "duracao_ms": 145,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-09: Orixás e entidades editáveis só afetam a própria casa",
+  "resultado": "Passou",
+  "duracao_ms": 186,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-10: Cadastro exige nome e telefone e recusa telefone repetido na casa",
+  "resultado": "Passou",
+  "duracao_ms": 109,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-11: Convite por WhatsApp com link válido por 7 dias e status visível",
+  "resultado": "Passou",
+  "duracao_ms": 147,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-12: Filho só entra aceitando o termo; aceite gravado com data, hora e versão",
+  "resultado": "Passou",
+  "duracao_ms": 183,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-13: Bloqueio suspende acesso e novas mensalidades, mantém as pendências",
+  "resultado": "Passou",
+  "duracao_ms": 223,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-14: Desligar preserva histórico; exclusão só a pedido do titular, com anonimização",
+  "resultado": "Passou",
+  "duracao_ms": 161,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-15: Grupos direcionam avisos e cobranças",
+  "resultado": "Passou",
+  "duracao_ms": 286,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-16: Aviso para filhos específicos; fixado fica no topo até a validade",
+  "resultado": "Passou",
+  "duracao_ms": 237,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-17: Comunicado de gira pela agenda com confirmação de presença em tempo real",
+  "resultado": "Passou",
+  "duracao_ms": 213,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-18: Notificação push tem texto neutro, sem termos religiosos",
+  "resultado": "Passou",
+  "duracao_ms": 91,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-19: Calendário traz giras, trabalhos, búzios e festas com cor por tipo",
+  "resultado": "Passou",
+  "duracao_ms": 50,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-20: Gira recorrente semanal e cancelamento de uma data só",
+  "resultado": "Passou",
+  "duracao_ms": 32,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-21: Búzios com horários disponíveis, sem dupla marcação e com datas bloqueadas",
+  "resultado": "Passou",
+  "duracao_ms": 173,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-22: Mensalidade configurada uma vez é gerada todo mês, sem duplicar, com entrada proporcional",
+  "resultado": "Passou",
+  "duracao_ms": 228,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-23: Lote com prévia; cada filho recebe cobrança independente",
+  "resultado": "Passou",
+  "duracao_ms": 194,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-24: Trabalho individual cria evento, cobrança e aviso ligados; cancelar pergunta pela cobrança",
+  "resultado": "Passou",
+  "duracao_ms": 312,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-25: Baixa manual em dinheiro, registrada na auditoria",
+  "resultado": "Passou",
+  "duracao_ms": 115,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-26: Cancelamento exige motivo; paga só pode ser estornada",
+  "resultado": "Passou",
+  "duracao_ms": 132,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-27: Isenção e desconto aplicados na mensalidade",
+  "resultado": "Passou",
+  "duracao_ms": 139,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-28: Filho paga por Pix; webhook dá baixa, emite recibo e não duplica",
+  "resultado": "Passou",
+  "duracao_ms": 234,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-29: Dashboard bate com a soma de cobranças e despesas do mês",
+  "resultado": "Passou",
+  "duracao_ms": 228,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "US-30: Início do filho mostra só os dados dele, com vencidas em destaque",
+  "resultado": "Passou",
+  "duracao_ms": 308,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "RN-01: Sacerdote de uma casa não enxerga nada de outra",
+  "resultado": "Passou",
+  "duracao_ms": 248,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "RN-07: Filho só vê os próprios dados; dados espirituais em modo leitura",
+  "resultado": "Passou",
+  "duracao_ms": 242,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "LGPD: filho baixa os próprios dados e revoga o consentimento religioso",
+  "resultado": "Passou",
+  "duracao_ms": 203,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "RF-14: Auxiliar tem só as permissões que o sacerdote liberar",
+  "resultado": "Passou",
+  "duracao_ms": 225,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "RNF-04: Login bloqueia por 15 minutos após 5 tentativas erradas",
+  "resultado": "Passou",
+  "duracao_ms": 349,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "RF-07: Admin só entra no terreiro com consentimento do sacerdote",
+  "resultado": "Passou",
+  "duracao_ms": 108,
+  "erro": ""
+ },
+ {
+  "suite": "Integração (histórias)",
+  "teste": "Entradas inválidas retornam 400/404, nunca 500",
+  "resultado": "Passou",
+  "duracao_ms": 135,
+  "erro": ""
+ },
+ {
+  "suite": "Interface (PWA)",
+  "teste": "UI-01: Login pelo formulário leva ao início do sacerdote",
+  "resultado": "Passou",
+  "duracao_ms": 498,
+  "erro": ""
+ },
+ {
+  "suite": "Interface (PWA)",
+  "teste": "UI-02: Todas as telas do sacerdote abrem sem erro",
+  "resultado": "Passou",
+  "duracao_ms": 756,
+  "erro": ""
+ },
+ {
+  "suite": "Interface (PWA)",
+  "teste": "UI-03: Texto digitado pelo usuário é exibido como texto (sem injeção de HTML)",
+  "resultado": "Passou",
+  "duracao_ms": 61,
+  "erro": ""
+ },
+ {
+  "suite": "Interface (PWA)",
+  "teste": "UI-04: Publicar aviso pelo formulário",
+  "resultado": "Passou",
+  "duracao_ms": 501,
+  "erro": ""
+ },
+ {
+  "suite": "Interface (PWA)",
+  "teste": "UI-05: Cadastrar filho pelo formulário",
+  "resultado": "Passou",
+  "duracao_ms": 483,
+  "erro": ""
+ },
+ {
+  "suite": "Interface (PWA)",
+  "teste": "UI-06: Telas do filho abrem e mostram só os dados dele",
+  "resultado": "Passou",
+  "duracao_ms": 269,
+  "erro": ""
+ },
+ {
+  "suite": "Interface (PWA)",
+  "teste": "UI-07: Painel do admin e convite abrem sem erro",
+  "resultado": "Passou",
+  "duracao_ms": 511,
+  "erro": ""
+ },
+ {
+  "suite": "Contrato (OpenAPI e gateway)",
+  "teste": "CG-01: Adaptador simulado e Asaas expõem a mesma interface",
+  "resultado": "Passou",
+  "duracao_ms": 1,
+  "erro": ""
+ },
+ {
+  "suite": "Contrato (OpenAPI e gateway)",
+  "teste": "CG-02: Cobrança e subconta do simulador seguem o schema do contrato",
+  "resultado": "Passou",
+  "duracao_ms": 6,
+  "erro": ""
+ },
+ {
+  "suite": "Contrato (OpenAPI e gateway)",
+  "teste": "CG-03: Eventos gerados pelo simulador obedecem ao formato de webhook do Asaas",
+  "resultado": "Passou",
+  "duracao_ms": 6,
+  "erro": ""
+ },
+ {
+  "suite": "Contrato (OpenAPI e gateway)",
+  "teste": "CG-04: Receptor aceita os eventos documentados do Asaas e ignora os demais",
+  "resultado": "Passou",
+  "duracao_ms": 320,
+  "erro": ""
+ },
+ {
+  "suite": "Contrato (OpenAPI e gateway)",
+  "teste": "CG-05: Pagamento desconhecido não quebra o receptor; repetição é idempotente",
+  "resultado": "Passou",
+  "duracao_ms": 9,
+  "erro": ""
+ },
+ {
+  "suite": "Contrato (OpenAPI e gateway)",
+  "teste": "CT-01: Toda rota do servidor está documentada no openapi.json (e vice-versa)",
+  "resultado": "Passou",
+  "duracao_ms": 3,
+  "erro": ""
+ },
+ {
+  "suite": "Contrato (OpenAPI e gateway)",
+  "teste": "CT-02: Respostas reais obedecem aos schemas em todo o ciclo de uso",
+  "resultado": "Passou",
+  "duracao_ms": 1564,
+  "erro": ""
+ },
+ {
+  "suite": "Contrato (OpenAPI e gateway)",
+  "teste": "CT-03: Cobertura do contrato ≥ 95% das operações exercitadas",
+  "resultado": "Passou",
+  "duracao_ms": 1,
+  "erro": ""
+ }
+]

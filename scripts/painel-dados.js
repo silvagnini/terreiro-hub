@@ -59,6 +59,8 @@ gravar('contrato.json', contrato ? [{
 }] : []);
 const carga = ler('carga.json');
 if (carga) {
+  // descarta medições inválidas (ex.: casa grande fora da amostra gerou 404 em massa)
+  for (const d of carga.degraus) d.cenarios = d.cenarios.filter((c) => !(c.nao_2xx > c.requisicoes * 0.01));
   gravar('carga.json', carga.degraus.flatMap((d) => d.cenarios.map((c) => ({
     terreiros: d.terreiros_carga, filhos: d.filhos, cobrancas: d.cobrancas, tamanho_mb: d.tamanho_mb, cenario: c.cenario,
     req_s: c.rps, p50_ms: c.p50_ms, p99_ms: c.p99_ms, erros: c.erros + c.nao_2xx, requisicoes: c.requisicoes,
@@ -68,5 +70,12 @@ if (carga) {
     { conexoes: r.conexoes, cenario: 'Início do filho', req_s: r.inicio_filho.rps, p50_ms: r.inicio_filho.p50_ms, p99_ms: r.inicio_filho.p99_ms, erros: r.inicio_filho.erros + r.inicio_filho.nao_2xx },
   ]));
   gravar('ambiente.json', [carga.ambiente]);
+  if (carga.antes_indice) {
+    const depois = carga.degraus.find((d) => d.terreiros_carga === carga.antes_indice.terreiros);
+    gravar('indice.json', carga.antes_indice.cenarios.map((a) => {
+      const b = depois?.cenarios.find((x) => x.cenario === a.cenario);
+      return { cenario: a.cenario, req_s_antes: a.rps, req_s_depois: b?.rps ?? null, p99_ms_antes: a.p99_ms, p99_ms_depois: b?.p99_ms ?? null };
+    }));
+  }
 }
 console.log('painel: dados gravados em reports/painel/', fs.readdirSync(OUT).join(', '));

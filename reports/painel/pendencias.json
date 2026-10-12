@@ -1,0 +1,58 @@
+[
+ {
+  "n": 1,
+  "item": "Integração real de notificações (Web Push, WhatsApp, e-mail)",
+  "quando": "Fase 2",
+  "requisitos": "RF-29, RF-61",
+  "status": "Pendente"
+ },
+ {
+  "n": 2,
+  "item": "Validar adaptador Asaas no sandbox",
+  "quando": "Antes de produção",
+  "requisitos": "RF-48, RF-49",
+  "status": "Pendente"
+ },
+ {
+  "n": 3,
+  "item": "Autenticação em 2 fatores",
+  "quando": "Antes de produção",
+  "requisitos": "RNF-04",
+  "status": "Pendente"
+ },
+ {
+  "n": 4,
+  "item": "Upload de fotos e comprovantes",
+  "quando": "Fase 2",
+  "requisitos": "RF-15, RF-43",
+  "status": "Pendente"
+ },
+ {
+  "n": 5,
+  "item": "Link público de búzios para consulente",
+  "quando": "Fase 2",
+  "requisitos": "RF-33",
+  "status": "Pendente"
+ },
+ {
+  "n": 6,
+  "item": "Pix Automático",
+  "quando": "Fase 2",
+  "requisitos": "RF-51",
+  "status": "Pendente"
+ },
+ {
+  "n": 7,
+  "item": "Importação de filhos por planilha",
+  "quando": "Fase 2",
+  "requisitos": "RF-23",
+  "status": "Pendente"
+ },
+ {
+  "n": 8,
+  "item": "Teste visual em aparelhos reais (Android e iOS)",
+  "quando": "Antes dos pilotos",
+  "requisitos": "RNF-01, RNF-09",
+  "status": "Pendente"
+ }
+]

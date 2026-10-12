@@ -11,7 +11,8 @@
     "test:ui": "node scripts/rodar-testes.js interface",
     "test:contrato": "node scripts/rodar-testes.js contrato",
     "carga": "node load/rodar-carga.js",
-    "openapi": "node scripts/gerar-openapi.js"
+    "openapi": "node scripts/gerar-openapi.js",
+    "painel": "node scripts/painel-dados.js"
   },
   "license": "UNLICENSED",
   "dependencies": {

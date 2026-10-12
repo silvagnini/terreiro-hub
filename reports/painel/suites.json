@@ -1,0 +1,30 @@
+[
+ {
+  "suite": "Unitários",
+  "total": 9,
+  "passaram": 9,
+  "falharam": 0,
+  "duracao_s": 0.3
+ },
+ {
+  "suite": "Integração (histórias)",
+  "total": 38,
+  "passaram": 38,
+  "falharam": 0,
+  "duracao_s": 10.8
+ },
+ {
+  "suite": "Interface (PWA)",
+  "total": 7,
+  "passaram": 7,
+  "falharam": 0,
+  "duracao_s": 4.9
+ },
+ {
+  "suite": "Contrato (OpenAPI e gateway)",
+  "total": 8,
+  "passaram": 8,
+  "falharam": 0,
+  "duracao_s": 3.2
+ }
+]

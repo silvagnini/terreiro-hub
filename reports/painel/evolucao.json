@@ -1,0 +1,18 @@
+[
+ {
+  "execucao": 1,
+  "em": "2026-10-12T14:31:33.428Z",
+  "suites": "integracao",
+  "total": 38,
+  "passaram": 38,
+  "falharam": 0
+ },
+ {
+  "execucao": 2,
+  "em": "2026-10-12T14:43:04.363Z",
+  "suites": "unitarios, integracao, interface, contrato",
+  "total": 62,
+  "passaram": 62,
+  "falharam": 0
+ }
+]

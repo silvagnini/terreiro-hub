@@ -1,0 +1,66 @@
+[
+ {
+  "conexoes": 10,
+  "cenario": "Dashboard do sacerdote",
+  "req_s": 186,
+  "p50_ms": 51,
+  "p99_ms": 104,
+  "erros": 0
+ },
+ {
+  "conexoes": 10,
+  "cenario": "Início do filho",
+  "req_s": 297,
+  "p50_ms": 33,
+  "p99_ms": 54,
+  "erros": 0
+ },
+ {
+  "conexoes": 50,
+  "cenario": "Dashboard do sacerdote",
+  "req_s": 204,
+  "p50_ms": 242,
+  "p99_ms": 336,
+  "erros": 0
+ },
+ {
+  "conexoes": 50,
+  "cenario": "Início do filho",
+  "req_s": 282,
+  "p50_ms": 173,
+  "p99_ms": 241,
+  "erros": 0
+ },
+ {
+  "conexoes": 100,
+  "cenario": "Dashboard do sacerdote",
+  "req_s": 201,
+  "p50_ms": 478,
+  "p99_ms": 1527,
+  "erros": 0
+ },
+ {
+  "conexoes": 100,
+  "cenario": "Início do filho",
+  "req_s": 290,
+  "p50_ms": 334,
+  "p99_ms": 799,
+  "erros": 0
+ },
+ {
+  "conexoes": 200,
+  "cenario": "Dashboard do sacerdote",
+  "req_s": 199,
+  "p50_ms": 962,
+  "p99_ms": 3271,
+  "erros": 0
+ },
+ {
+  "conexoes": 200,
+  "cenario": "Início do filho",
+  "req_s": 258,
+  "p50_ms": 730,
+  "p99_ms": 2504,
+  "erros": 0
+ }
+]

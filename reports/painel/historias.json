@@ -1,0 +1,272 @@
+[
+ {
+  "id": "US-01",
+  "epico": "E1 Admin",
+  "titulo": "Cadastrar terreiro e convidar sacerdote",
+  "tamanho": "M",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-01: Admin cadastra terreiro em teste por 30 dias e convida o sacerdote"
+ },
+ {
+  "id": "US-02",
+  "epico": "E1 Admin",
+  "titulo": "Planos com limite de filhos",
+  "tamanho": "P",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-02: Plano com limite avisa aos 90% e pede upgrade aos 100%"
+ },
+ {
+  "id": "US-03",
+  "epico": "E1 Admin",
+  "titulo": "Fatura mensal do SaaS",
+  "tamanho": "M",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-03: Fatura do SaaS é gerada no fim do teste e baixada pelo webhook"
+ },
+ {
+  "id": "US-04",
+  "epico": "E1 Admin",
+  "titulo": "Régua de inadimplência do terreiro",
+  "tamanho": "M",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-04: Régua de inadimplência: aviso (5d), somente leitura (15d), bloqueio (30d); filhos continuam pagando"
+ },
+ {
+  "id": "US-05",
+  "epico": "E1 Admin",
+  "titulo": "Bloquear, desbloquear e encerrar terreiro",
+  "tamanho": "P",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-05: Admin bloqueia com motivo, desbloqueia e encerra com exportação"
+ },
+ {
+  "id": "US-06",
+  "epico": "E2 Configuração",
+  "titulo": "Assistente de primeiro acesso",
+  "tamanho": "M",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-06: Assistente de primeiro acesso com 4 etapas que podem ser puladas"
+ },
+ {
+  "id": "US-07",
+  "epico": "E2 Configuração",
+  "titulo": "Conta de recebimento (subconta)",
+  "tamanho": "G",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-07: Sem conta aprovada a cobrança fica aguardando; ao aprovar ela é enviada"
+ },
+ {
+  "id": "US-08",
+  "epico": "E2 Configuração",
+  "titulo": "Catálogo de trabalhos",
+  "tamanho": "P",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-08: Catálogo de serviços preenche o valor sugerido, que pode ser alterado"
+ },
+ {
+  "id": "US-09",
+  "epico": "E2 Configuração",
+  "titulo": "Orixás e entidades da casa",
+  "tamanho": "P",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-09: Orixás e entidades editáveis só afetam a própria casa"
+ },
+ {
+  "id": "US-10",
+  "epico": "E3 Filhos",
+  "titulo": "Cadastro de filho",
+  "tamanho": "M",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-10: Cadastro exige nome e telefone e recusa telefone repetido na casa"
+ },
+ {
+  "id": "US-11",
+  "epico": "E3 Filhos",
+  "titulo": "Convite por WhatsApp",
+  "tamanho": "M",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-11: Convite por WhatsApp com link válido por 7 dias e status visível"
+ },
+ {
+  "id": "US-12",
+  "epico": "E3 Filhos",
+  "titulo": "Aceite com consentimento LGPD",
+  "tamanho": "M",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-12: Filho só entra aceitando o termo; aceite gravado com data, hora e versão"
+ },
+ {
+  "id": "US-13",
+  "epico": "E3 Filhos",
+  "titulo": "Bloquear filho",
+  "tamanho": "P",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-13: Bloqueio suspende acesso e novas mensalidades, mantém as pendências"
+ },
+ {
+  "id": "US-14",
+  "epico": "E3 Filhos",
+  "titulo": "Desligar e anonimizar",
+  "tamanho": "P",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-14: Desligar preserva histórico; exclusão só a pedido do titular, com anonimização"
+ },
+ {
+  "id": "US-15",
+  "epico": "E3 Filhos",
+  "titulo": "Grupos",
+  "tamanho": "P",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-15: Grupos direcionam avisos e cobranças"
+ },
+ {
+  "id": "US-16",
+  "epico": "E4 Mural",
+  "titulo": "Aviso por público",
+  "tamanho": "M",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-16: Aviso para filhos específicos; fixado fica no topo até a validade"
+ },
+ {
+  "id": "US-17",
+  "epico": "E4 Mural",
+  "titulo": "Comunicado de gira e presença",
+  "tamanho": "M",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-17: Comunicado de gira pela agenda com confirmação de presença em tempo real"
+ },
+ {
+  "id": "US-18",
+  "epico": "E4 Mural",
+  "titulo": "Notificação discreta",
+  "tamanho": "P",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-18: Notificação push tem texto neutro, sem termos religiosos"
+ },
+ {
+  "id": "US-19",
+  "epico": "E5 Agenda",
+  "titulo": "Calendário por tipo",
+  "tamanho": "M",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-19: Calendário traz giras, trabalhos, búzios e festas com cor por tipo"
+ },
+ {
+  "id": "US-20",
+  "epico": "E5 Agenda",
+  "titulo": "Gira recorrente",
+  "tamanho": "M",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-20: Gira recorrente semanal e cancelamento de uma data só"
+ },
+ {
+  "id": "US-21",
+  "epico": "E5 Agenda",
+  "titulo": "Agenda de búzios",
+  "tamanho": "M",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-21: Búzios com horários disponíveis, sem dupla marcação e com datas bloqueadas"
+ },
+ {
+  "id": "US-22",
+  "epico": "E6 Cobranças",
+  "titulo": "Mensalidade automática",
+  "tamanho": "G",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-22: Mensalidade configurada uma vez é gerada todo mês, sem duplicar, com entrada proporcional"
+ },
+ {
+  "id": "US-23",
+  "epico": "E6 Cobranças",
+  "titulo": "Cobrança em lote",
+  "tamanho": "M",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-23: Lote com prévia; cada filho recebe cobrança independente"
+ },
+ {
+  "id": "US-24",
+  "epico": "E6 Cobranças",
+  "titulo": "Trabalho individual unificado",
+  "tamanho": "G",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-24: Trabalho individual cria evento, cobrança e aviso ligados; cancelar pergunta pela cobrança"
+ },
+ {
+  "id": "US-25",
+  "epico": "E6 Cobranças",
+  "titulo": "Baixa manual",
+  "tamanho": "P",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-25: Baixa manual em dinheiro, registrada na auditoria"
+ },
+ {
+  "id": "US-26",
+  "epico": "E6 Cobranças",
+  "titulo": "Cancelar e estornar",
+  "tamanho": "P",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-26: Cancelamento exige motivo; paga só pode ser estornada"
+ },
+ {
+  "id": "US-27",
+  "epico": "E6 Cobranças",
+  "titulo": "Isenção e desconto",
+  "tamanho": "P",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-27: Isenção e desconto aplicados na mensalidade"
+ },
+ {
+  "id": "US-28",
+  "epico": "E7 Pagamento",
+  "titulo": "Pagar por Pix/boleto",
+  "tamanho": "G",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-28: Filho paga por Pix; webhook dá baixa, emite recibo e não duplica"
+ },
+ {
+  "id": "US-29",
+  "epico": "E8 Dashboard",
+  "titulo": "Dashboard financeiro",
+  "tamanho": "G",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-29: Dashboard bate com a soma de cobranças e despesas do mês"
+ },
+ {
+  "id": "US-30",
+  "epico": "E9 Área do filho",
+  "titulo": "Início do filho",
+  "tamanho": "M",
+  "desenvolvimento": "Concluída",
+  "teste": "Passou",
+  "teste_nome": "US-30: Início do filho mostra só os dados dele, com vencidas em destaque"
+ }
+]

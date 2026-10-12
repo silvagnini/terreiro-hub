@@ -1,0 +1,13 @@
+[
+ {
+  "cpus": 2,
+  "modelo_cpu": "Intel(R) Xeon(R) Processor @ 2.80GHz",
+  "memoria_gb": 8,
+  "node": "v22.22.0",
+  "postgres": "16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)",
+  "shared_buffers": "256MB",
+  "observacao": "Servidor, banco e gerador de carga na mesma máquina; os números são um piso conservador.",
+  "duracao_cenario_s": 15,
+  "conexoes": 20
+ }
+]

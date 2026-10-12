@@ -1,0 +1,65 @@
+[
+ {
+  "cenario": "Dashboard do sacerdote",
+  "req_s_antes": 210,
+  "req_s_depois": 200,
+  "p99_ms_antes": 143,
+  "p99_ms_depois": 152
+ },
+ {
+  "cenario": "Dashboard · casa de 300 filhos (RNF-07)",
+  "req_s_antes": 159,
+  "req_s_depois": 150,
+  "p99_ms_antes": 202,
+  "p99_ms_depois": 219
+ },
+ {
+  "cenario": "Lista de filhos",
+  "req_s_antes": 354,
+  "req_s_depois": 394,
+  "p99_ms_antes": 100,
+  "p99_ms_depois": 85
+ },
+ {
+  "cenario": "Cobranças vencidas",
+  "req_s_antes": 323,
+  "req_s_depois": 389,
+  "p99_ms_antes": 110,
+  "p99_ms_depois": 84
+ },
+ {
+  "cenario": "Início do filho",
+  "req_s_antes": 123,
+  "req_s_depois": 295,
+  "p99_ms_antes": 275,
+  "p99_ms_depois": 98
+ },
+ {
+  "cenario": "Mural do filho",
+  "req_s_antes": 405,
+  "req_s_depois": 424,
+  "p99_ms_antes": 79,
+  "p99_ms_depois": 81
+ },
+ {
+  "cenario": "Criar cobrança (escrita)",
+  "req_s_antes": 332,
+  "req_s_depois": 335,
+  "p99_ms_antes": 99,
+  "p99_ms_depois": 95
+ },
+ {
+  "cenario": "Webhook de pagamento (escrita)",
+  "req_s_antes": 777,
+  "req_s_depois": 749,
+  "p99_ms_antes": 46,
+  "p99_ms_depois": 46
+ },
+ {
+  "cenario": "Métricas globais do admin",
+  "req_s_antes": 214,
+  "req_s_depois": 208,
+  "p99_ms_antes": 175,
+  "p99_ms_depois": 180
+ }
+]
