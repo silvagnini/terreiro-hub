@@ -56,7 +56,7 @@ async function amostras(qtdTerreiros) {
   const casas = await db.many(
     `select t.id, (regexp_replace(t.email, '\\D', '', 'g'))::int as seq,
             (select f.id from filhos f where f.terreiro_id = t.id and f.status = 'ativo' limit 1) as filho
-       from terreiros t where t.email like '%@carga.dev' order by random() limit 300`
+       from terreiros t where t.email like '%@carga.dev' order by (t.email = 'casa${GRANDE}@carga.dev') desc, random() limit 300`
   );
   const abertas = await db.many(`select gateway_id, valor_centavos from cobrancas where status = 'aberta' and gateway_id is not null order by random() limit 60000`);
   return { casas, abertas, qtdTerreiros };
@@ -92,7 +92,9 @@ async function prepararAdmin() {
 
 async function main() {
   const inicio = Date.now();
-  await db.query('drop schema public cascade; create schema public;');
+  const CONTINUAR = 'continuar' in args; // retoma um teste interrompido sem apagar a massa já criada
+  const arqRel = path.join(__dirname, '..', 'reports', 'carga.json');
+  if (!CONTINUAR) await db.query('drop schema public cascade; create schema public;');
   await require('../src/server').preparar();
   await prepararAdmin();
   const ambiente = {
@@ -102,20 +104,27 @@ async function main() {
     duracao_cenario_s: DURACAO, conexoes: CONEXOES,
   };
   console.log('[carga] ambiente', JSON.stringify(ambiente));
-  const relatorio = { gerado_em: new Date().toISOString(), ambiente, degraus: [], rampa: [] };
+  const anterior = CONTINUAR && fs.existsSync(arqRel) ? JSON.parse(fs.readFileSync(arqRel, 'utf8')) : null;
+  const relatorio = anterior ? { ...anterior, ambiente } : { gerado_em: new Date().toISOString(), ambiente, degraus: [], rampa: [] };
   const salvar = () => {
     fs.mkdirSync(path.join(__dirname, '..', 'reports'), { recursive: true });
     fs.writeFileSync(path.join(__dirname, '..', 'reports', 'carga.json'), JSON.stringify({ ...relatorio, duracao_total_s: Math.round((Date.now() - inicio) / 1000) }, null, 2));
   };
 
   // casa grande fixa (RNF-07: 300 filhos e 2 anos de histórico)
-  await vol.semearTerreiros(GRANDE - 1, GRANDE, { filhos: 300, meses: 24, prefixo: 'Terreiro Grande' });
-  let atual = 0;
+  if (!(await db.one(`select 1 from terreiros where email = 'casa${GRANDE}@carga.dev'`))) {
+    await vol.semearTerreiros(GRANDE - 1, GRANDE, { filhos: 300, meses: 24, prefixo: 'Terreiro Grande' });
+  }
+  let atual = (await db.one(`select count(*)::int as n from terreiros where email like '%@carga.dev' and email <> 'casa${GRANDE}@carga.dev'`)).n;
   let servidor;
+  const feitos = new Set(relatorio.degraus.map((d) => d.terreiros_carga - 1));
   for (const alvo of DEGRAUS) {
+    const remedir = String(args.remedir || '').split(',').map(Number).includes(alvo);
+    if (remedir) { console.log(`[carga] remedindo ${alvo}`); }
+    else if (alvo < atual || feitos.has(alvo)) { console.log(`[carga] degrau ${alvo} já medido, pulando`); continue; }
     console.log(`\n[carga] degrau: ${alvo} terreiros × 100 filhos × 24 meses`);
-    const ms = await vol.semearTerreiros(atual, alvo, { filhos: 100, meses: 24 });
-    atual = alvo;
+    const ms = remedir ? 0 : await vol.semearTerreiros(atual, alvo, { filhos: 100, meses: 24 });
+    atual = Math.max(atual, alvo);
     const contagem = await vol.contar();
     console.log('[carga] volume', JSON.stringify(contagem), `semeado em ${Math.round(ms / 1000)}s`);
     if (servidor) servidor.kill();
@@ -128,12 +137,17 @@ async function main() {
       console.log(`  ${nome.padEnd(42)} ${String(r.rps).padStart(5)} req/s · p50 ${r.p50_ms}ms · p99 ${r.p99_ms}ms · erros ${r.erros} · não-2xx ${r.nao_2xx}`);
       resultados.push(r);
     }
+    for (const r of resultados) if (r.nao_2xx > r.requisicoes * 0.01) console.warn(`  [aviso] ${r.cenario}: ${r.nao_2xx} respostas não-2xx — medição inválida`);
+    relatorio.degraus = relatorio.degraus.filter((d) => d.terreiros_carga !== contagem.terreiros);
     relatorio.degraus.push({ terreiros: alvo + 1, ...contagem, terreiros_carga: contagem.terreiros, semeadura_s: Math.round(ms / 1000), cenarios: resultados });
     salvar();
   }
 
+  if ('sem-rampa' in args) { if (servidor) servidor.kill(); salvar(); await db.close(); return; }
   // rampa de concorrência no maior volume: leitura mista (dashboard + início do filho)
   console.log('\n[carga] rampa de concorrência no maior volume');
+  if (!servidor) servidor = await subirServidor();
+  relatorio.rampa = [];
   const a = await amostras(atual);
   const [dash, , , , inicioFilho] = cenarios(a);
   for (const c of RAMPA) {

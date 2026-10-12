@@ -1,0 +1,12 @@
+[
+  {
+    "em": "2026-10-12T14:31:33.428Z",
+    "suites": [
+      "integracao"
+    ],
+    "integracao": {
+      "total": 38,
+      "passaram": 38
+    }
+  }
+]
