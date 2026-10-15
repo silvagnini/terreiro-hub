@@ -104,7 +104,8 @@ const carregarTerreiro = wrap(async (req, _res, next) => {
     }
   }
   if (!vinculo) throw erro.naoEncontrado('Terreiro não encontrado');
-  if (vinculo.papel === 'filho') {
+  if (vinculo.filho_id) {
+    // vale também para o filho que é auxiliar (ex.: Pai Pequeno): bloqueado como filho, bloqueado na casa
     const f = await db.one('select status from filhos where id = $1', [vinculo.filho_id]);
     if (!f || f.status === 'bloqueado' || f.status === 'desligado') throw erro.proibido('Seu acesso a esta casa está suspenso. Fale com o sacerdote.');
   }
@@ -115,7 +116,7 @@ const carregarTerreiro = wrap(async (req, _res, next) => {
     );
   }
   const escrita = !['GET', 'HEAD', 'OPTIONS'].includes(req.method);
-  if (t.status === 'somente_leitura' && escrita && vinculo.papel !== 'filho' && !req.path.startsWith('/assinatura')) {
+  if (t.status === 'somente_leitura' && escrita && vinculo.papel !== 'filho' && !req.path.startsWith('/assinatura') && !req.path.startsWith('/meu')) {
     throw erro.bloqueado('Painel em modo somente leitura por fatura em atraso. Pague a assinatura para voltar a editar.', { status: t.status });
   }
   req.terreiro = t;
@@ -130,7 +131,8 @@ function exigir(...papeisOuPermissao) {
     if (!v) return next(erro.proibido());
     const [alvo, perm] = papeisOuPermissao;
     if (alvo === 'sacerdote') return v.papel === 'sacerdote' ? next() : next(erro.proibido());
-    if (alvo === 'filho') return v.papel === 'filho' ? next() : next(erro.proibido());
+    // um auxiliar que também é filho da casa (filho_id preenchido) acessa a própria área de filho
+    if (alvo === 'filho') return v.papel === 'filho' || v.filho_id ? next() : next(erro.proibido());
     if (alvo === 'staff') {
       if (v.papel === 'sacerdote') return next();
       if (v.papel === 'auxiliar') {

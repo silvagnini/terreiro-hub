@@ -104,7 +104,7 @@ r.post('/', podeFilhos, wrap(async (req, res) => {
 
 r.get('/:id', podeFilhos, wrap(async (req, res) => {
   const f = await buscarFilho(db, req.terreiro.id, req.params.id);
-  const [grupos, obrigacoes, resumo] = await Promise.all([
+  const [grupos, obrigacoes, resumo, vinc] = await Promise.all([
     db.many('select g.id, g.nome from filho_grupos fg join grupos g on g.id = fg.grupo_id where fg.filho_id = $1 order by g.nome', [f.id]),
     db.many('select * from obrigacoes where filho_id = $1 order by data desc', [f.id]),
     db.one(
@@ -114,8 +114,10 @@ r.get('/:id', podeFilhos, wrap(async (req, res) => {
          from cobrancas where filho_id = $1`,
       [f.id, relogio.hoje()]
     ),
+    db.one('select id, papel, permissoes from vinculos where filho_id = $1 and ativo', [f.id]),
   ]);
-  res.json({ ...visivel(f, req.vinculo.papel), grupos, obrigacoes, financeiro: resumo });
+  const auxiliar = vinc?.papel === 'auxiliar' ? { vinculo_id: vinc.id, permissoes: { ...auth.PERMISSOES_AUXILIAR_PADRAO, ...vinc.permissoes } } : null;
+  res.json({ ...visivel(f, req.vinculo.papel), grupos, obrigacoes, financeiro: resumo, auxiliar });
 }));
 
 r.patch('/:id', podeFilhos, wrap(async (req, res) => {
@@ -167,12 +169,26 @@ r.post('/:id/convite', podeFilhos, wrap(async (req, res) => {
   const f = await buscarFilho(db, req.terreiro.id, req.params.id);
   if (f.convite_status === 'ativo') throw erro.regra('Este filho já ativou o acesso');
   if (f.status !== 'ativo') throw erro.regra('Só é possível convidar filhos ativos');
-  const v = await db.one(`select id from vinculos where filho_id = $1 and papel = 'filho'`, [f.id]);
+  const v = await db.one(`select id from vinculos where filho_id = $1 and papel in ('filho','auxiliar')`, [f.id]);
   const convite = await gerarConvite(db, v.id, 7);
   await db.query(`update filhos set convite_status = 'convidado' where id = $1`, [f.id]);
   if (f.email) await notificar(null, { terreiroId: req.terreiro.id, filhoIds: [f.id], tipo: 'convite', referencia: v.id, canais: ['email'], link: convite.link });
   const texto = `Olá, ${f.nome_civil.split(' ')[0]}! Este é o seu convite para o app da casa ${req.terreiro.nome}. Crie sua senha aqui: ${convite.link}`;
   res.json({ link: convite.link, whatsapp: linkWhatsApp(f.telefone, texto), expira_em_dias: 7, convite_status: 'convidado' });
+}));
+
+// Filho que também ajuda na administração (Pai/Mãe Pequeno, Ogã, tesoureiro): ganha permissões de auxiliar
+// e continua com a própria área de filho (mensalidades, perfil), no mesmo login.
+r.post('/:id/auxiliar', sacerdote, wrap(async (req, res) => {
+  const f = await buscarFilho(db, req.terreiro.id, req.params.id);
+  if (f.status !== 'ativo') throw erro.regra('Só filhos ativos podem ser auxiliares');
+  const v = await db.one('select * from vinculos where filho_id = $1 and ativo', [f.id]);
+  if (!v) throw erro.naoEncontrado();
+  if (v.papel === 'auxiliar') throw erro.conflito('Este filho já é auxiliar');
+  const permissoes = { ...auth.PERMISSOES_AUXILIAR_PADRAO, ...(campo(req.body || {}, 'permissoes', { tipo: 'object' }) || {}) };
+  await db.query(`update vinculos set papel = 'auxiliar', permissoes = $2 where id = $1`, [v.id, permissoes]);
+  await auditar(null, { terreiroId: req.terreiro.id, usuarioId: req.usuario.id, acao: 'auxiliar_criado', entidade: 'vinculo', entidadeId: v.id, dados: { permissoes, filho_id: f.id } });
+  res.json({ vinculo_id: v.id, permissoes, acesso_ativo: f.convite_status === 'ativo' });
 }));
 
 // Link de nova senha gerado pelo sacerdote (filho sem e-mail, ou que perdeu o acesso ao WhatsApp)

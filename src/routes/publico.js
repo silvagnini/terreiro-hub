@@ -132,14 +132,14 @@ async function vinculoPorToken(token) {
 
 r.get('/convites/:token', wrap(async (req, res) => {
   const v = await vinculoPorToken(req.params.token);
-  res.json({ terreiro: v.terreiro_nome, papel: v.papel, nome: v.filho_nome || null, exige_consentimento: v.papel === 'filho', termo_versao: TERMO_VERSAO });
+  res.json({ terreiro: v.terreiro_nome, papel: v.papel, nome: v.filho_nome || null, exige_consentimento: Boolean(v.filho_id), termo_versao: TERMO_VERSAO });
 }));
 
 r.post('/convites/aceitar', wrap(async (req, res) => {
   const v = await vinculoPorToken(req.body.token);
   const senha = req.body.senha;
   auth.validarSenha(senha);
-  if (v.papel === 'filho' && req.body.consentimento !== true) {
+  if (v.filho_id && req.body.consentimento !== true) {
     throw erro.validacao('É preciso aceitar o termo de uso dos dados para entrar', { campo: 'consentimento' });
   }
   const resultado = await db.tx(async (t) => {
@@ -170,7 +170,7 @@ r.post('/convites/aceitar', wrap(async (req, res) => {
         [v.filho_id, usuario.id, TERMO_VERSAO, req.ip, req.body.consentimento_religioso === true]
       );
     }
-    await auditar(t, { terreiroId: v.terreiro_id, usuarioId: usuario.id, acao: 'convite_aceito', entidade: 'vinculo', entidadeId: v.id, dados: { papel: v.papel, termo: v.papel === 'filho' ? TERMO_VERSAO : null } });
+    await auditar(t, { terreiroId: v.terreiro_id, usuarioId: usuario.id, acao: 'convite_aceito', entidade: 'vinculo', entidadeId: v.id, dados: { papel: v.papel, termo: v.filho_id ? TERMO_VERSAO : null } });
     return usuario;
   });
   const token = await auth.criarSessao(resultado.id);

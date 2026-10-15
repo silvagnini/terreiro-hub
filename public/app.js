@@ -118,6 +118,7 @@
       ['agenda', '#/agenda', 'Agenda', IC.agenda, !perm || perm.agenda],
       ['financeiro', '#/financeiro', 'Financeiro', IC.dinheiro, !perm || perm.financeiro],
       ['mural', '#/mural', 'Mural', IC.mural, !perm || perm.mural],
+      ['pagamentos', '#/pagamentos', 'Eu', IC.perfil, Boolean(S.terreiro?.filho_id)],
     ].filter((i) => i[4]);
     return html`<nav class="inferior" aria-label="Menu principal">${itens.map(([k, href, rot, ic]) => html`<a href="${href}" ${raw(k === ativo ? 'aria-current="page"' : '')}>${raw(ic)}${rot}</a>`)}</nav>`;
   }
@@ -473,12 +474,15 @@
     if (sac && ['afastado', 'desligado'].includes(f.status)) acoes.push(['reativar', 'Reativar', 'contorno']);
     if (sac && f.status !== 'desligado') acoes.push(['desligar', 'Desligar da casa', 'perigo']);
     if (sac && f.convite_status === 'ativo' && ['ativo', 'afastado'].includes(f.status)) acoes.push(['link-senha', 'Gerar link de nova senha', 'sec']);
+    if (sac && f.status === 'ativo' && !f.auxiliar) acoes.push(['auxiliar', 'Tornar auxiliar (Pai/Mãe Pequeno, Ogã…)', 'contorno']);
+    if (sac && f.auxiliar) acoes.push(['remover-aux', 'Tirar permissões de auxiliar', 'sec']);
     if (sac) acoes.push(['excluir', 'Excluir a pedido do titular', 'perigo']);
     telaBarra(f.nome_civil, html`
       <div class="cartao g empilha" style="gap:10px">
         <div class="lado"><div class="empilha"><strong style="font-size:18px">${f.nome_civil}</strong><span class="sutil">${f.nome_santo || 'Sem nome de santo'}</span></div>${STATUS[f.status]}</div>
         <div class="sutil">WhatsApp: ${f.telefone || '—'} · Entrada: ${dataBR(f.data_entrada)}</div>
         ${'pai_cabeca' in f ? html`<div class="lado"><span>Pai de cabeça: <strong>${f.pai_cabeca || '—'}</strong></span><span>Mãe: <strong>${f.mae_cabeca || '—'}</strong></span></div>` : ''}
+        ${f.auxiliar ? html`<div><span class="selo roxo">Auxiliar da casa</span></div>` : ''}
         <div class="sutil">Acesso ao app: ${{ nao_enviado: 'convite não enviado', convidado: 'convidado, aguardando', expirado: 'convite expirou', ativo: 'ativo' }[f.convite_status]}</div>
       </div>
       <fieldset class="campo"><legend>Grupos</legend><div class="chips">${grupos.map((g) => html`<button type="button" class="chip" data-grupo="${g.id}" aria-pressed="${f.grupos.some((x) => x.id === g.id)}">${g.nome}</button>`)}</div></fieldset>
@@ -515,6 +519,29 @@
       try {
         if (a === 'convite') { const c = await post(T(`/filhos/${id}/convite`)); window.open(c.whatsapp, '_blank', 'noopener'); aviso('Convite gerado (vale 7 dias)'); return render(true); }
         if (a === 'trabalho') { location.hash = `#/trabalho/novo?filho=${id}`; return; }
+        if (a === 'auxiliar') {
+          const PERMS = [['filhos', 'Filhos'], ['mural', 'Mural'], ['agenda', 'Agenda'], ['financeiro', 'Financeiro'], ['despesas', 'Despesas'], ['dashboard', 'Painel']];
+          folha(html`<h2>Tornar ${f.nome_civil.split(' ')[0]} auxiliar</h2>
+            <p>Continua sendo filho da casa, com as mensalidades e o perfil dele, e passa a ajudar no painel com o mesmo login.</p>
+            <fieldset class="campo"><legend>O que pode fazer</legend><div class="chips">${PERMS.map(([k, l]) => html`<button type="button" class="chip" data-p="${k}" aria-pressed="${['filhos', 'mural', 'agenda'].includes(k)}">${l}</button>`)}</div></fieldset>
+            ${f.convite_status !== 'ativo' ? html`<p class="sutil">Ele ainda não ativou o acesso ao app. As permissões valem assim que aceitar o convite.</p>` : ''}
+            <button class="btn" data-ok>Confirmar</button><button class="btn sec" data-fechar>Cancelar</button>`, (el, fechar) => {
+            $$('[data-p]', el).forEach((c) => (c.onclick = () => c.setAttribute('aria-pressed', c.getAttribute('aria-pressed') !== 'true')));
+            $('[data-ok]', el).onclick = async () => {
+              try {
+                await post(T(`/filhos/${id}/auxiliar`), { permissoes: Object.fromEntries($$('[data-p]', el).map((c) => [c.dataset.p, c.getAttribute('aria-pressed') === 'true'])) });
+                fechar(); aviso('Agora é auxiliar da casa'); render(true);
+              } catch (e) { aviso(e.message, true); }
+            };
+          });
+          return;
+        }
+        if (a === 'remover-aux') {
+          if (!(await confirmar('Tirar as permissões de auxiliar? Ele continua como filho da casa.', { ok: 'Tirar permissões' }))) return;
+          await api('PATCH', T(`/auxiliares/${f.auxiliar.vinculo_id}`), { ativo: false });
+          aviso('Voltou a ser só filho'); render(true);
+          return;
+        }
         if (a === 'link-senha') {
           const l = await post(T(`/filhos/${id}/link-senha`));
           folha(html`<h2>Link de nova senha</h2><p>Vale por ${l.expira_em_horas} horas e só pode ser usado uma vez.</p><div class="pix">${l.link}</div>
@@ -954,8 +981,8 @@
         <form class="lado" id="fg"><input name="nome" type="text" placeholder="Novo grupo" required><button class="btn peq" type="submit">+</button></form></section>
       ${sac ? html`<section class="secao"><h2>Orixás e entidades da casa</h2><p class="sutil">Toque para mostrar ou esconder nas listas.</p><div class="chips">${entidades.map((e) => html`<button class="chip" aria-pressed="${!e.oculto}" data-ent="${e.id}">${e.nome}</button>`)}</div>
           <form class="lado" id="fe"><select name="tipo" style="width:130px"><option value="orixa">Orixá</option><option value="entidade">Entidade</option></select><input name="nome" type="text" placeholder="Nome" required><button class="btn peq" type="submit">+</button></form></section>
-        <section class="secao"><h2>Auxiliares</h2><p class="sutil">Pai/Mãe Pequeno, Ogã, tesoureiro. Escolha o que cada um pode fazer.</p>
-          <div class="lista">${auxiliares.map((a) => html`<div class="cartao empilha" style="gap:8px"><div class="lado"><strong>${a.nome || a.email || a.telefone}</strong>${a.convite_pendente ? html`<span class="selo roxo">Convidado</span>` : ''}</div>
+        <section class="secao"><h2>Auxiliares</h2><p class="sutil">Pai/Mãe Pequeno, Ogã, tesoureiro. Escolha o que cada um pode fazer. Se a pessoa já é filho da casa, use o mesmo e-mail dela (ou "Tornar auxiliar" na ficha do filho) — ela continua vendo as próprias mensalidades.</p>
+          <div class="lista">${auxiliares.map((a) => html`<div class="cartao empilha" style="gap:8px"><div class="lado"><span class="empilha"><strong>${a.nome || a.email || a.telefone}</strong>${a.filho_id ? html`<span class="sutil">Também é filho da casa</span>` : ''}</span><span class="lado" style="gap:6px">${a.convite_pendente ? html`<span class="selo roxo">Convidado</span>` : ''}<button class="icone-btn" aria-label="Remover auxiliar" data-rmaux="${a.id}" data-filho="${a.filho_id ? 1 : ''}">✕</button></span></div>
             <div class="chips">${[['filhos', 'Filhos'], ['mural', 'Mural'], ['agenda', 'Agenda'], ['financeiro', 'Financeiro'], ['despesas', 'Despesas'], ['dashboard', 'Painel']].map(([k, l]) => html`<button class="chip" aria-pressed="${a.permissoes[k] !== false && (a.permissoes[k] || ['filhos', 'mural', 'agenda'].includes(k))}" data-aux="${a.id}" data-perm="${k}">${l}</button>`)}</div></div>`)}</div>
           <form class="cartao form" id="fa"><div class="campo"><label for="an">Nome</label><input id="an" name="nome" type="text" required></div><div class="campo"><label for="ae">E-mail</label><input id="ae" name="email" type="email" required></div><button class="btn peq" type="submit">Convidar auxiliar</button></form></section>
         <section class="secao"><h2>Suporte</h2><button class="btn sec" id="suporte">Liberar acesso do suporte por 24h</button></section>` : ''}
@@ -973,10 +1000,15 @@
     $$('[data-ent]').forEach((b) => (b.onclick = async () => { const visivel = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', visivel); await api('PATCH', T(`/entidades/${b.dataset.ent}`), { oculto: !visivel }); }));
     if ($('#fe')) aoEnviar($('#fe'), async (fd) => { await post(T('/entidades'), Object.fromEntries(fd)); render(true); });
     $$('[data-aux]').forEach((b) => (b.onclick = async () => { const v = b.getAttribute('aria-pressed') !== 'true'; b.setAttribute('aria-pressed', v); await api('PATCH', T(`/auxiliares/${b.dataset.aux}`), { permissoes: Object.fromEntries($$(`[data-aux="${b.dataset.aux}"]`).map((x) => [x.dataset.perm, x.getAttribute('aria-pressed') === 'true'])) }); aviso('Permissões salvas'); }));
+    $$('[data-rmaux]').forEach((b) => (b.onclick = async () => {
+      const filho = b.dataset.filho;
+      if (!(await confirmar(filho ? 'Tirar as permissões de auxiliar? Ele continua como filho da casa.' : 'Remover o acesso deste auxiliar?', { ok: 'Remover', perigo: !filho }))) return;
+      await api('PATCH', T(`/auxiliares/${b.dataset.rmaux}`), { ativo: false }); aviso('Auxiliar removido'); render(true);
+    }));
     if ($('#fa')) aoEnviar($('#fa'), async (fd) => {
       const r = await post(T('/auxiliares'), Object.fromEntries(fd));
       if (r.convite) folha(html`<h2>Convite criado</h2><p>Envie este link para ${r.nome}. Ele vale 7 dias.</p><div class="pix">${r.convite.link}</div><button class="btn" data-cp>Copiar link</button><button class="btn sec" data-fechar>Fechar</button>`, (el) => $('[data-cp]', el).onclick = () => navigator.clipboard.writeText(r.convite.link).then(() => aviso('Link copiado')));
-      else aviso('Auxiliar adicionado');
+      else aviso(r.filho_id ? 'Filho agora também é auxiliar' : 'Auxiliar adicionado');
       render(true);
     });
     $('#suporte')?.addEventListener('click', async () => { await post(T('/assinatura/consentir-suporte'), { horas: 24 }); aviso('Suporte liberado por 24 horas'); });
@@ -1006,7 +1038,7 @@
 
   async function telaPagamentos() {
     const c = await get(T('/meu/cobrancas'));
-    telaNav('pagamentos', html`${topo('Pagamentos')}<main class="conteudo"><div class="lista">${c.map((x) => html`<a class="item" href="#/pagar/${x.id}"><span class="corpo"><strong>${x.descricao}</strong><span class="sutil">${x.status === 'paga' ? 'Pago em ' + dataBR(x.pago_em) : 'Vence ' + dataBR(x.vencimento)}</span></span><span class="empilha" style="align-items:flex-end"><strong>${brl(x.valor_final_centavos)}</strong>${seloSituacao(x.situacao)}</span></a>`)}${c.length ? '' : html`<div class="vazio">Nenhum pagamento.</div>`}</div></main>`);
+    telaNav('pagamentos', html`${topo(S.papel === 'filho' ? 'Pagamentos' : 'Meus pagamentos')}<main class="conteudo">${S.papel !== 'filho' ? html`<a class="item" href="#/perfil"><span class="corpo"><strong>Meu perfil de filho</strong><span class="sutil">Dados, notificações e senha</span></span>›</a>` : ''}<div class="lista">${c.map((x) => html`<a class="item" href="#/pagar/${x.id}"><span class="corpo"><strong>${x.descricao}</strong><span class="sutil">${x.status === 'paga' ? 'Pago em ' + dataBR(x.pago_em) : 'Vence ' + dataBR(x.vencimento)}</span></span><span class="empilha" style="align-items:flex-end"><strong>${brl(x.valor_final_centavos)}</strong>${seloSituacao(x.situacao)}</span></a>`)}${c.length ? '' : html`<div class="vazio">Nenhum pagamento.</div>`}</div></main>`);
   }
 
   async function telaPagar({ id }) {
@@ -1182,7 +1214,7 @@
       if (!manterRolagem) carregando();
       if (!S.terreiro) S.terreiro = await get(T(''));
       const filho = S.papel === 'filho';
-      if ((rota.acesso === 'staff' && filho) || (rota.acesso === 'filho' && !filho)) { location.hash = '#/'; return; }
+      if ((rota.acesso === 'staff' && filho) || (rota.acesso === 'filho' && !filho && !S.terreiro?.filho_id)) { location.hash = '#/'; return; }
       const fn = typeof rota.fn === 'object' ? rota.fn[filho ? 'filho' : 'staff'] : rota.fn;
       await fn(rota.params);
       if (id === renderizando) window.scrollTo(0, manterRolagem ? y : 0);

@@ -23,7 +23,7 @@ r.get('/', wrap(async (req, res) => {
   );
   const base = {
     id: t.id, nome: t.nome, tradicao: t.tradicao, logo_url: t.logo_url, cor: t.cor, status: t.status, nomenclatura: t.nomenclatura,
-    papel: req.vinculo.papel, permissoes: req.vinculo.papel === 'auxiliar' ? { ...auth.PERMISSOES_AUXILIAR_PADRAO, ...req.vinculo.permissoes } : null,
+    papel: req.vinculo.papel, filho_id: req.vinculo.filho_id || null, permissoes: req.vinculo.papel === 'auxiliar' ? { ...auth.PERMISSOES_AUXILIAR_PADRAO, ...req.vinculo.permissoes } : null,
   };
   if (req.vinculo.papel === 'filho') return res.json(base);
   const limite = plano?.limite_filhos || null;
@@ -169,8 +169,10 @@ r.delete('/grupos/:id', sacerdote, wrap(async (req, res) => {
 // ---------- auxiliares (RF-14) ----------
 r.get('/auxiliares', sacerdote, wrap(async (req, res) => {
   res.json(await db.many(
-    `select v.id, v.permissoes, v.ativo, u.nome, u.email, u.telefone, (v.convite_token_hash is not null) as convite_pendente
-       from vinculos v left join usuarios u on u.id = v.usuario_id where v.terreiro_id = $1 and v.papel = 'auxiliar' order by u.nome`,
+    `select v.id, v.permissoes, v.ativo, v.filho_id, coalesce(u.nome, f.nome_civil) as nome, coalesce(u.email, f.email) as email, coalesce(u.telefone, f.telefone) as telefone,
+            (v.convite_token_hash is not null or v.usuario_id is null) as convite_pendente
+       from vinculos v left join usuarios u on u.id = v.usuario_id left join filhos f on f.id = v.filho_id
+      where v.terreiro_id = $1 and v.papel = 'auxiliar' and v.ativo order by nome`,
     [req.terreiro.id]
   ));
 }));
@@ -183,7 +185,13 @@ r.post('/auxiliares', sacerdote, wrap(async (req, res) => {
   const out = await db.tx(async (q) => {
     let u = await q.one('select * from usuarios where ($1::text is not null and lower(email) = $1) or ($2::text is not null and telefone = $2)', [email || null, telefone || null]);
     if (!u) u = await q.one('insert into usuarios(nome, email, telefone) values ($1,$2,$3) returning *', [nome, email || null, telefone || null]);
-    const ja = await q.one('select 1 from vinculos where usuario_id = $1 and terreiro_id = $2', [u.id, req.terreiro.id]);
+    const ja = await q.one('select * from vinculos where usuario_id = $1 and terreiro_id = $2 and ativo', [u.id, req.terreiro.id]);
+    if (ja && ja.papel === 'filho') {
+      // já é filho da casa: ganha as permissões de auxiliar sem perder a área de filho
+      const v = await q.one(`update vinculos set papel = 'auxiliar', permissoes = $2 where id = $1 returning *`, [ja.id, permissoes]);
+      await auditar(q, { terreiroId: req.terreiro.id, usuarioId: req.usuario.id, acao: 'auxiliar_criado', entidade: 'vinculo', entidadeId: v.id, dados: { permissoes, filho_id: ja.filho_id } });
+      return { id: v.id, nome, permissoes, convite: null, filho_id: ja.filho_id };
+    }
     if (ja) throw erro.conflito('Esta pessoa já tem acesso a este terreiro');
     const v = await q.one(`insert into vinculos(usuario_id, terreiro_id, papel, permissoes) values ($1,$2,'auxiliar',$3) returning *`, [u.id, req.terreiro.id, permissoes]);
     const convite = u.senha_hash ? null : await gerarConvite(q, v.id);
@@ -194,6 +202,14 @@ r.post('/auxiliares', sacerdote, wrap(async (req, res) => {
   res.status(201).json(out);
 }));
 r.patch('/auxiliares/:id', sacerdote, wrap(async (req, res) => {
+  const atual = await db.one(`select * from vinculos where id = $1 and terreiro_id = $2 and papel = 'auxiliar'`, [req.params.id, req.terreiro.id]);
+  if (!atual) throw erro.naoEncontrado();
+  if (atual.filho_id && req.body.ativo === false) {
+    // auxiliar que é filho: perde só as permissões de auxiliar e volta a ser filho
+    await db.query(`update vinculos set papel = 'filho', permissoes = '{}' where id = $1`, [atual.id]);
+    await auditar(null, { terreiroId: req.terreiro.id, usuarioId: req.usuario.id, acao: 'auxiliar_removido', entidade: 'vinculo', entidadeId: atual.id, dados: { filho_id: atual.filho_id } });
+    return res.json({ id: atual.id, permissoes: {}, ativo: false });
+  }
   const v = await db.one(
     `update vinculos set permissoes = coalesce($3, permissoes), ativo = coalesce($4, ativo) where id = $1 and terreiro_id = $2 and papel = 'auxiliar' returning id, permissoes, ativo`,
     [req.params.id, req.terreiro.id, campo(req.body, 'permissoes', { tipo: 'object' }) ?? null, 'ativo' in req.body ? campo(req.body, 'ativo', { tipo: 'bool' }) : null]

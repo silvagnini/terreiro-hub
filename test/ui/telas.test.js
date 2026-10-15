@@ -175,4 +175,23 @@ describe('Interface (PWA) · telas renderizam e fluxos principais funcionam', ()
     assert.ok(c.includes('Conta e notificações'));
     t2.fechar();
   });
+  it('UI-10: Pai Pequeno (filho + auxiliar) vê o painel e a aba "Eu" com os próprios pagamentos', async () => {
+    const pp = await h.filhoComAcesso(ctx.sac, ctx.tid, { nome_civil: 'Pai Pequeno Teste' });
+    const t0 = abrir(`#/filhos/${pp.filho.id}`, ctx.sac.token, ctx.tid);
+    const ficha = await irPara(t0, `#/filhos/${pp.filho.id}`);
+    assert.ok(ficha.includes('Tornar auxiliar'));
+    t0.fechar();
+    await ctx.sac.post(`/api/t/${ctx.tid}/filhos/${pp.filho.id}/auxiliar`);
+    await ctx.sac.post(`/api/t/${ctx.tid}/cobrancas`, { filho_id: pp.filho.id, descricao: 'Mensalidade PP', valor_centavos: 5000, vencimento: '2099-01-10' });
+    const t = abrir('#/', pp.api.token, ctx.tid);
+    await irPara(t, '#/');
+    assert.ok(t.doc.querySelector('nav a[href="#/pagamentos"]'), 'aba Eu aparece');
+    assert.ok(t.doc.querySelector('nav a[href="#/filhos"]'), 'aba Filhos aparece');
+    const pag = await irPara(t, '#/pagamentos');
+    assert.ok(pag.includes('Mensalidade PP') && pag.includes('Meus pagamentos'));
+    const perfil = await irPara(t, '#/perfil');
+    assert.ok(perfil.includes('Conta e notificações'));
+    assert.equal(t.w.location.hash, '#/perfil');
+    t.fechar();
+  });
 });

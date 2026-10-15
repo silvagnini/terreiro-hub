@@ -1035,14 +1035,58 @@
                   "em_atraso",
                   "total_aberto_centavos"
                 ]
+              },
+              "auxiliar": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "vinculo_id": {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      "permissoes": {
+                        "type": "object"
+                      }
+                    },
+                    "required": [
+                      "vinculo_id",
+                      "permissoes"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             },
             "required": [
               "grupos",
               "obrigacoes",
-              "financeiro"
+              "financeiro",
+              "auxiliar"
             ]
           }
+        ]
+      },
+      "FilhoAuxiliar": {
+        "type": "object",
+        "properties": {
+          "vinculo_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "permissoes": {
+            "type": "object"
+          },
+          "acesso_ativo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "vinculo_id",
+          "permissoes",
+          "acesso_ativo"
         ]
       },
       "FilhoFinanceiro": {
@@ -3492,6 +3536,105 @@
             }
           },
           "403": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/t/{tid}/filhos/{id}/auxiliar": {
+      "post": {
+        "summary": "Tornar o filho auxiliar (Pai/Mãe Pequeno) sem perder a área de filho",
+        "tags": [
+          "Filhos"
+        ],
+        "operationId": "postTTidFilhosIdAuxiliar",
+        "parameters": [
+          {
+            "name": "tid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilhoAuxiliar"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "422": {
             "description": "Erro",
             "content": {
               "application/json": {
