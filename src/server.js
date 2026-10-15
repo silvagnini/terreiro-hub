@@ -12,6 +12,7 @@ const PLANOS_PADRAO = [
 
 async function preparar() {
   await db.migrate();
+  await require('./services/limpeza').limparSePedido();
   if (process.env.NODE_ENV === 'production' && require('./gateway').gateway.nome === 'asaas' && !process.env.CHAVE_CIFRA) {
     throw new Error('Com GATEWAY=asaas é obrigatório definir CHAVE_CIFRA (32 bytes em base64)');
   }
