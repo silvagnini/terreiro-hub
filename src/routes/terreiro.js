@@ -92,6 +92,11 @@ r.post('/conta-recebimento', sacerdote, wrap(async (req, res) => {
     [t.id, sub.id, sub.walletId || null, sub.apiKey ? cifrar(sub.apiKey) : null]
   );
   await auditar(null, { terreiroId: t.id, usuarioId: req.usuario.id, acao: 'conta_recebimento_solicitada', entidade: 'terreiro', entidadeId: t.id });
+  // Versão de teste (gateway simulado + SIMULADO_AUTO=true): a "análise do banco" aprova na hora
+  if (gateway.nome === 'simulado' && process.env.SIMULADO_AUTO === 'true') {
+    await fetch(`http://127.0.0.1:${req.socket.localPort}/api/simulador/aprovar-conta/${sub.id}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
+    return res.status(201).json({ gateway_conta_id: sub.id, gateway_conta_status: 'aprovada' });
+  }
   res.status(201).json({ gateway_conta_id: sub.id, gateway_conta_status: 'pendente' });
 }));
 

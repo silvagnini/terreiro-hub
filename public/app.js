@@ -1044,15 +1044,18 @@
   async function telaPagar({ id }) {
     const c = await get(T(`/meu/cobrancas/${id}`));
     const recibo = c.status === 'paga' ? await get(T(`/meu/cobrancas/${id}/recibo`)) : null;
+    const teste = c.status === 'aberta' && c.gateway_id && (await get('/api/saude').catch(() => ({}))).gateway === 'simulado';
     telaBarra(c.descricao, html`
       <div class="cartao g empilha" style="gap:6px"><div class="lado"><span>Valor</span><span class="grande">${brl(c.valor_final_centavos)}</span></div>${c.desconto_centavos ? html`<div class="sutil">Desconto de ${brl(c.desconto_centavos)} já aplicado</div>` : ''}<div class="lado"><span>Vencimento</span><strong>${dataBR(c.vencimento)}</strong></div><div>${seloSituacao(c.situacao)}</div></div>
       ${['aberta'].includes(c.status) && c.pix_copia_cola ? html`<section class="secao"><h2>Pix copia e cola</h2><p class="sutil">Abra o app do seu banco, escolha Pix › Copia e cola e cole o código.</p><div class="pix" id="pix">${c.pix_copia_cola}</div><button class="btn bloco" id="copiar">Copiar código Pix</button></section>
         ${c.boleto_linha ? html`<section class="secao"><h2>Boleto</h2><div class="pix">${c.boleto_linha}</div><button class="btn sec bloco" id="copiarB">Copiar linha do boleto</button></section>` : ''}
         ${c.link_pagamento ? html`<a class="btn sec bloco" href="${c.link_pagamento}" target="_blank" rel="noopener">Pagar com cartão ou ver o boleto</a>` : ''}
         <p class="sutil">Assim que o banco confirmar, o pagamento aparece aqui como pago e você recebe o recibo.</p>` : ''}
+      ${teste ? html`<div class="cartao alerta empilha" style="gap:8px"><strong>Versão de teste</strong><span>Este Pix é de mentira. Toque abaixo para fazer de conta que você pagou.</span><button class="btn bloco" id="simular">Simular pagamento</button></div>` : ''}
       ${c.status === 'aberta' && c.pix_pendente ? html`<div class="cartao alerta">O Pix desta cobrança ainda está sendo gerado. Tente de novo em alguns minutos.</div>` : ''}
       ${recibo ? html`<section class="cartao g empilha" style="gap:6px"><span class="rotulo">Recibo nº ${recibo.numero}</span><div>${recibo.terreiro}</div><div>Recebemos de <strong>${recibo.pagador}</strong> o valor de <strong>${brl(recibo.valor_centavos)}</strong> referente a ${recibo.descricao}.</div><div class="sutil">Pago em ${new Date(recibo.pago_em).toLocaleString('pt-BR', { timeZone: TZ })} · ${recibo.forma_pagamento}</div><button class="btn sec peq" onclick="window.print()">Imprimir ou salvar</button></section>` : ''}`, { voltar: '#/pagamentos' });
     $('#copiar')?.addEventListener('click', () => navigator.clipboard.writeText(c.pix_copia_cola).then(() => aviso('Código Pix copiado')));
+    $('#simular')?.addEventListener('click', async () => { try { await post(`/api/simulador/pagar/${encodeURIComponent(c.gateway_id)}`, { forma: 'PIX' }); aviso('Pagamento simulado'); render(true); } catch (e) { aviso(e.message, true); } });
     $('#copiarB')?.addEventListener('click', () => navigator.clipboard.writeText(c.boleto_linha).then(() => aviso('Linha copiada')));
   }
 

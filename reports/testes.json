@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-10-15T01:29:21.637Z",
+  "gerado_em": "2026-10-15T14:53:13.865Z",
   "suites": [
     {
       "id": "unitarios",
@@ -8,7 +8,7 @@
       "total": 9,
       "passaram": 9,
       "falharam": 0,
-      "duracao_ms": 296,
+      "duracao_ms": 326,
       "codigo_saida": 0,
       "testes": [
         {
@@ -29,7 +29,7 @@
           "nome": "Datas: dias no mês, fim de mês e soma de dias",
           "arquivo": "unit/regras.test.js",
           "ok": true,
-          "duracao_ms": 0,
+          "duracao_ms": 1,
           "erro": null
         },
         {
@@ -64,7 +64,7 @@
           "nome": "US-20: recorrência semanal respeita data final, intervalo e teto",
           "arquivo": "unit/regras.test.js",
           "ok": true,
-          "duracao_ms": 18,
+          "duracao_ms": 19,
           "erro": null
         },
         {
@@ -80,416 +80,423 @@
       "id": "integracao",
       "nome": "Integração (histórias)",
       "glob": "test/api/**/*.test.js",
-      "total": 58,
-      "passaram": 58,
+      "total": 59,
+      "passaram": 59,
       "falharam": 0,
-      "duracao_ms": 13680,
+      "duracao_ms": 18150,
       "codigo_saida": 0,
       "testes": [
         {
           "nome": "US-01: Admin cadastra terreiro em teste por 30 dias e convida o sacerdote",
           "arquivo": "api/e1_admin.test.js",
           "ok": true,
-          "duracao_ms": 150,
+          "duracao_ms": 183,
           "erro": null
         },
         {
           "nome": "US-02: Plano com limite avisa aos 90% e pede upgrade aos 100%",
           "arquivo": "api/e1_admin.test.js",
           "ok": true,
-          "duracao_ms": 134,
+          "duracao_ms": 164,
           "erro": null
         },
         {
           "nome": "US-03: Fatura do SaaS é gerada no fim do teste e baixada pelo webhook",
           "arquivo": "api/e1_admin.test.js",
           "ok": true,
-          "duracao_ms": 115,
+          "duracao_ms": 147,
           "erro": null
         },
         {
           "nome": "US-04: Régua de inadimplência: aviso (5d), somente leitura (15d), bloqueio (30d); filhos continuam pagando",
           "arquivo": "api/e1_admin.test.js",
           "ok": true,
-          "duracao_ms": 313,
+          "duracao_ms": 358,
           "erro": null
         },
         {
           "nome": "US-05: Admin bloqueia com motivo, desbloqueia e encerra com exportação",
           "arquivo": "api/e1_admin.test.js",
           "ok": true,
-          "duracao_ms": 159,
+          "duracao_ms": 182,
           "erro": null
         },
         {
           "nome": "RF-06: Métricas do SaaS (MRR, inadimplência, filhos)",
           "arquivo": "api/e1_admin.test.js",
           "ok": true,
-          "duracao_ms": 7,
+          "duracao_ms": 6,
           "erro": null
         },
         {
           "nome": "US-06: Assistente de primeiro acesso com 4 etapas que podem ser puladas",
           "arquivo": "api/e2_e3_terreiro_filhos.test.js",
           "ok": true,
-          "duracao_ms": 168,
+          "duracao_ms": 196,
           "erro": null
         },
         {
           "nome": "US-07: Sem conta aprovada a cobrança fica aguardando; ao aprovar ela é enviada",
           "arquivo": "api/e2_e3_terreiro_filhos.test.js",
           "ok": true,
-          "duracao_ms": 119,
+          "duracao_ms": 130,
           "erro": null
         },
         {
           "nome": "US-08: Catálogo de serviços preenche o valor sugerido, que pode ser alterado",
           "arquivo": "api/e2_e3_terreiro_filhos.test.js",
           "ok": true,
-          "duracao_ms": 113,
+          "duracao_ms": 174,
           "erro": null
         },
         {
           "nome": "US-09: Orixás e entidades editáveis só afetam a própria casa",
           "arquivo": "api/e2_e3_terreiro_filhos.test.js",
           "ok": true,
-          "duracao_ms": 165,
+          "duracao_ms": 238,
           "erro": null
         },
         {
           "nome": "US-10: Cadastro exige nome e telefone e recusa telefone repetido na casa",
           "arquivo": "api/e2_e3_terreiro_filhos.test.js",
           "ok": true,
-          "duracao_ms": 98,
+          "duracao_ms": 127,
           "erro": null
         },
         {
           "nome": "US-11: Convite por WhatsApp com link válido por 7 dias e status visível",
           "arquivo": "api/e2_e3_terreiro_filhos.test.js",
           "ok": true,
-          "duracao_ms": 109,
+          "duracao_ms": 128,
           "erro": null
         },
         {
           "nome": "US-12: Filho só entra aceitando o termo; aceite gravado com data, hora e versão",
           "arquivo": "api/e2_e3_terreiro_filhos.test.js",
           "ok": true,
-          "duracao_ms": 162,
+          "duracao_ms": 171,
           "erro": null
         },
         {
           "nome": "US-13: Bloqueio suspende acesso e novas mensalidades, mantém as pendências",
           "arquivo": "api/e2_e3_terreiro_filhos.test.js",
           "ok": true,
-          "duracao_ms": 182,
+          "duracao_ms": 189,
           "erro": null
         },
         {
           "nome": "US-14: Desligar preserva histórico; exclusão só a pedido do titular, com anonimização",
           "arquivo": "api/e2_e3_terreiro_filhos.test.js",
           "ok": true,
-          "duracao_ms": 127,
+          "duracao_ms": 194,
           "erro": null
         },
         {
           "nome": "US-15: Grupos direcionam avisos e cobranças",
           "arquivo": "api/e2_e3_terreiro_filhos.test.js",
           "ok": true,
-          "duracao_ms": 208,
+          "duracao_ms": 292,
           "erro": null
         },
         {
           "nome": "US-16: Aviso para filhos específicos; fixado fica no topo até a validade",
           "arquivo": "api/e4_e5_mural_agenda.test.js",
           "ok": true,
-          "duracao_ms": 217,
+          "duracao_ms": 293,
           "erro": null
         },
         {
           "nome": "US-17: Comunicado de gira pela agenda com confirmação de presença em tempo real",
           "arquivo": "api/e4_e5_mural_agenda.test.js",
           "ok": true,
-          "duracao_ms": 162,
+          "duracao_ms": 239,
           "erro": null
         },
         {
           "nome": "US-18: Notificação push tem texto neutro, sem termos religiosos",
           "arquivo": "api/e4_e5_mural_agenda.test.js",
           "ok": true,
-          "duracao_ms": 72,
+          "duracao_ms": 95,
           "erro": null
         },
         {
           "nome": "US-19: Calendário traz giras, trabalhos, búzios e festas com cor por tipo",
           "arquivo": "api/e4_e5_mural_agenda.test.js",
           "ok": true,
-          "duracao_ms": 46,
+          "duracao_ms": 56,
           "erro": null
         },
         {
           "nome": "US-20: Gira recorrente semanal e cancelamento de uma data só",
           "arquivo": "api/e4_e5_mural_agenda.test.js",
           "ok": true,
-          "duracao_ms": 27,
+          "duracao_ms": 36,
           "erro": null
         },
         {
           "nome": "US-21: Búzios com horários disponíveis, sem dupla marcação e com datas bloqueadas",
           "arquivo": "api/e4_e5_mural_agenda.test.js",
           "ok": true,
-          "duracao_ms": 121,
+          "duracao_ms": 152,
           "erro": null
         },
         {
           "nome": "US-22: Mensalidade configurada uma vez é gerada todo mês, sem duplicar, com entrada proporcional",
           "arquivo": "api/e6_e9_financeiro.test.js",
           "ok": true,
-          "duracao_ms": 228,
+          "duracao_ms": 254,
           "erro": null
         },
         {
           "nome": "US-23: Lote com prévia; cada filho recebe cobrança independente",
           "arquivo": "api/e6_e9_financeiro.test.js",
           "ok": true,
-          "duracao_ms": 175,
+          "duracao_ms": 213,
           "erro": null
         },
         {
           "nome": "US-24: Trabalho individual cria evento, cobrança e aviso ligados; cancelar pergunta pela cobrança",
           "arquivo": "api/e6_e9_financeiro.test.js",
           "ok": true,
-          "duracao_ms": 334,
+          "duracao_ms": 331,
           "erro": null
         },
         {
           "nome": "US-25: Baixa manual em dinheiro, registrada na auditoria",
           "arquivo": "api/e6_e9_financeiro.test.js",
           "ok": true,
-          "duracao_ms": 122,
+          "duracao_ms": 142,
           "erro": null
         },
         {
           "nome": "US-26: Cancelamento exige motivo; paga só pode ser estornada",
           "arquivo": "api/e6_e9_financeiro.test.js",
           "ok": true,
-          "duracao_ms": 128,
+          "duracao_ms": 147,
           "erro": null
         },
         {
           "nome": "US-27: Isenção e desconto aplicados na mensalidade",
           "arquivo": "api/e6_e9_financeiro.test.js",
           "ok": true,
-          "duracao_ms": 142,
+          "duracao_ms": 164,
           "erro": null
         },
         {
           "nome": "US-28: Filho paga por Pix; webhook dá baixa, emite recibo e não duplica",
           "arquivo": "api/e6_e9_financeiro.test.js",
           "ok": true,
-          "duracao_ms": 168,
+          "duracao_ms": 238,
           "erro": null
         },
         {
           "nome": "US-29: Dashboard bate com a soma de cobranças e despesas do mês",
           "arquivo": "api/e6_e9_financeiro.test.js",
           "ok": true,
-          "duracao_ms": 151,
+          "duracao_ms": 237,
           "erro": null
         },
         {
           "nome": "US-30: Início do filho mostra só os dados dele, com vencidas em destaque",
           "arquivo": "api/e6_e9_financeiro.test.js",
           "ok": true,
-          "duracao_ms": 240,
+          "duracao_ms": 347,
           "erro": null
         },
         {
           "nome": "AUX-01: pela ficha, filho vira auxiliar e acessa o painel e a própria área de filho",
           "arquivo": "api/filho_auxiliar.test.js",
           "ok": true,
-          "duracao_ms": 177,
+          "duracao_ms": 233,
           "erro": null
         },
         {
           "nome": "AUX-02: convidar como auxiliar o e-mail de um filho já ativo promove o mesmo acesso",
           "arquivo": "api/filho_auxiliar.test.js",
           "ok": true,
-          "duracao_ms": 88,
+          "duracao_ms": 126,
           "erro": null
         },
         {
           "nome": "AUX-03: filho bloqueado perde também o acesso de auxiliar",
           "arquivo": "api/filho_auxiliar.test.js",
           "ok": true,
-          "duracao_ms": 76,
+          "duracao_ms": 105,
           "erro": null
         },
         {
           "nome": "AUX-04: filho que ainda não ativou o acesso vira auxiliar e o convite pede o termo LGPD",
           "arquivo": "api/filho_auxiliar.test.js",
           "ok": true,
-          "duracao_ms": 86,
+          "duracao_ms": 112,
           "erro": null
         },
         {
           "nome": "MAN-01: apaga terreiros, filhos e cobranças, mantém admin e planos, e roda uma vez só",
           "arquivo": "api/limpeza.test.js",
           "ok": true,
-          "duracao_ms": 434,
+          "duracao_ms": 642,
+          "erro": null
+        },
+        {
+          "nome": "TST-01: conta aprovada na hora e filho simula o pagamento",
+          "arquivo": "api/modo_teste.test.js",
+          "ok": true,
+          "duracao_ms": 447,
           "erro": null
         },
         {
           "nome": "RN-01: Sacerdote de uma casa não enxerga nada de outra",
           "arquivo": "api/seguranca.test.js",
           "ok": true,
-          "duracao_ms": 240,
+          "duracao_ms": 270,
           "erro": null
         },
         {
           "nome": "RN-07: Filho só vê os próprios dados; dados espirituais em modo leitura",
           "arquivo": "api/seguranca.test.js",
           "ok": true,
-          "duracao_ms": 176,
+          "duracao_ms": 194,
           "erro": null
         },
         {
           "nome": "LGPD: filho baixa os próprios dados e revoga o consentimento religioso",
           "arquivo": "api/seguranca.test.js",
           "ok": true,
-          "duracao_ms": 197,
+          "duracao_ms": 217,
           "erro": null
         },
         {
           "nome": "RF-14: Auxiliar tem só as permissões que o sacerdote liberar",
           "arquivo": "api/seguranca.test.js",
           "ok": true,
-          "duracao_ms": 186,
+          "duracao_ms": 223,
           "erro": null
         },
         {
           "nome": "RNF-04: Login bloqueia por 15 minutos após 5 tentativas erradas",
           "arquivo": "api/seguranca.test.js",
           "ok": true,
-          "duracao_ms": 335,
+          "duracao_ms": 349,
           "erro": null
         },
         {
           "nome": "RF-07: Admin só entra no terreiro com consentimento do sacerdote",
           "arquivo": "api/seguranca.test.js",
           "ok": true,
-          "duracao_ms": 100,
+          "duracao_ms": 106,
           "erro": null
         },
         {
           "nome": "Entradas inválidas retornam 400/404, nunca 500",
           "arquivo": "api/seguranca.test.js",
           "ok": true,
-          "duracao_ms": 107,
+          "duracao_ms": 116,
           "erro": null
         },
         {
           "nome": "PW-01: troca de senha exige a atual e desconecta os outros aparelhos",
           "arquivo": "api/senha_notificacoes.test.js",
           "ok": true,
-          "duracao_ms": 515,
+          "duracao_ms": 580,
           "erro": null
         },
         {
           "nome": "PW-02: esqueci a senha por e-mail envia link de uso único que vale 1 hora",
           "arquivo": "api/senha_notificacoes.test.js",
           "ok": true,
-          "duracao_ms": 209,
+          "duracao_ms": 444,
           "erro": null
         },
         {
           "nome": "PW-03: pedido pelo telefone chega por WhatsApp (modelo de senha) e não revela contas inexistentes",
           "arquivo": "api/senha_notificacoes.test.js",
           "ok": true,
-          "duracao_ms": 155,
+          "duracao_ms": 230,
           "erro": null
         },
         {
           "nome": "PW-04: no máximo 3 pedidos por hora; link vencido é recusado",
           "arquivo": "api/senha_notificacoes.test.js",
           "ok": true,
-          "duracao_ms": 110,
+          "duracao_ms": 134,
           "erro": null
         },
         {
           "nome": "PW-05: sacerdote gera link de nova senha para filho com acesso; admin para o sacerdote",
           "arquivo": "api/senha_notificacoes.test.js",
           "ok": true,
-          "duracao_ms": 215,
+          "duracao_ms": 293,
           "erro": null
         },
         {
           "nome": "NT-01: aviso chega por Web Push cifrado, com assinatura VAPID, só nos aparelhos do filho",
           "arquivo": "api/senha_notificacoes.test.js",
           "ok": true,
-          "duracao_ms": 284,
+          "duracao_ms": 276,
           "erro": null
         },
         {
           "nome": "NT-02: WhatsApp usa o modelo aprovado com nome, texto neutro e link do app",
           "arquivo": "api/senha_notificacoes.test.js",
           "ok": true,
-          "duracao_ms": 114,
+          "duracao_ms": 118,
           "erro": null
         },
         {
           "nome": "NT-03: preferência desligada é respeitada, exceto em convite e senha",
           "arquivo": "api/senha_notificacoes.test.js",
           "ok": true,
-          "duracao_ms": 169,
+          "duracao_ms": 213,
           "erro": null
         },
         {
           "nome": "NT-04: falha temporária reagenda; definitiva marca falha; aparelho expirado é removido",
           "arquivo": "api/senha_notificacoes.test.js",
           "ok": true,
-          "duracao_ms": 166,
+          "duracao_ms": 246,
           "erro": null
         },
         {
           "nome": "NT-05: canal sem configuração e filho bloqueado são ignorados com o motivo",
           "arquivo": "api/senha_notificacoes.test.js",
           "ok": true,
-          "duracao_ms": 114,
+          "duracao_ms": 140,
           "erro": null
         },
         {
           "nome": "NT-06: convite do sacerdote chega por e-mail com o link de aceite",
           "arquivo": "api/senha_notificacoes.test.js",
           "ok": true,
-          "duracao_ms": 10,
+          "duracao_ms": 14,
           "erro": null
         },
         {
           "nome": "NT-07: painel do admin mostra os canais e testa o envio",
           "arquivo": "api/senha_notificacoes.test.js",
           "ok": true,
-          "duracao_ms": 11,
+          "duracao_ms": 16,
           "erro": null
         },
         {
           "nome": "AS-01: gateway fora do ar não perde a cobrança; a rotina gera o Pix depois",
           "arquivo": "api/senha_notificacoes.test.js",
           "ok": true,
-          "duracao_ms": 92,
+          "duracao_ms": 113,
           "erro": null
         },
         {
           "nome": "AS-02: a chave da subconta fica cifrada no banco",
           "arquivo": "api/senha_notificacoes.test.js",
           "ok": true,
-          "duracao_ms": 69,
+          "duracao_ms": 77,
           "erro": null
         },
         {
           "nome": "AS-03: adaptador Asaas monta subconta com webhook, usa a chave da subconta e reaproveita o cliente",
           "arquivo": "api/senha_notificacoes.test.js",
           "ok": true,
-          "duracao_ms": 3,
+          "duracao_ms": 4,
           "erro": null
         }
       ]
@@ -501,77 +508,77 @@
       "total": 10,
       "passaram": 10,
       "falharam": 0,
-      "duracao_ms": 5304,
+      "duracao_ms": 6826,
       "codigo_saida": 0,
       "testes": [
         {
           "nome": "UI-01: Login pelo formulário leva ao início do sacerdote",
           "arquivo": "ui/telas.test.js",
           "ok": true,
-          "duracao_ms": 502,
+          "duracao_ms": 549,
           "erro": null
         },
         {
           "nome": "UI-02: Todas as telas do sacerdote abrem sem erro",
           "arquivo": "ui/telas.test.js",
           "ok": true,
-          "duracao_ms": 660,
+          "duracao_ms": 778,
           "erro": null
         },
         {
           "nome": "UI-03: Texto digitado pelo usuário é exibido como texto (sem injeção de HTML)",
           "arquivo": "ui/telas.test.js",
           "ok": true,
-          "duracao_ms": 44,
+          "duracao_ms": 56,
           "erro": null
         },
         {
           "nome": "UI-04: Publicar aviso pelo formulário",
           "arquivo": "ui/telas.test.js",
           "ok": true,
-          "duracao_ms": 503,
+          "duracao_ms": 480,
           "erro": null
         },
         {
           "nome": "UI-05: Cadastrar filho pelo formulário",
           "arquivo": "ui/telas.test.js",
           "ok": true,
-          "duracao_ms": 480,
+          "duracao_ms": 482,
           "erro": null
         },
         {
           "nome": "UI-06: Telas do filho abrem e mostram só os dados dele",
           "arquivo": "ui/telas.test.js",
           "ok": true,
-          "duracao_ms": 263,
+          "duracao_ms": 284,
           "erro": null
         },
         {
           "nome": "UI-07: Painel do admin e convite abrem sem erro",
           "arquivo": "ui/telas.test.js",
           "ok": true,
-          "duracao_ms": 501,
+          "duracao_ms": 532,
           "erro": null
         },
         {
           "nome": "UI-08: Esqueci a senha e link de nova senha levam o filho de volta ao app",
           "arquivo": "ui/telas.test.js",
           "ok": true,
-          "duracao_ms": 942,
+          "duracao_ms": 962,
           "erro": null
         },
         {
           "nome": "UI-09: Admin vê as integrações e o sacerdote vê a conta nas configurações",
           "arquivo": "ui/telas.test.js",
           "ok": true,
-          "duracao_ms": 96,
+          "duracao_ms": 131,
           "erro": null
         },
         {
           "nome": "UI-10: Pai Pequeno (filho + auxiliar) vê o painel e a aba \"Eu\" com os próprios pagamentos",
           "arquivo": "ui/telas.test.js",
           "ok": true,
-          "duracao_ms": 246,
+          "duracao_ms": 286,
           "erro": null
         }
       ]
@@ -583,7 +590,7 @@
       "total": 8,
       "passaram": 8,
       "falharam": 0,
-      "duracao_ms": 3072,
+      "duracao_ms": 4286,
       "codigo_saida": 0,
       "testes": [
         {
@@ -597,28 +604,28 @@
           "nome": "CG-02: Cobrança e subconta do simulador seguem o schema do contrato",
           "arquivo": "contract/gateway.test.js",
           "ok": true,
-          "duracao_ms": 7,
+          "duracao_ms": 11,
           "erro": null
         },
         {
           "nome": "CG-03: Eventos gerados pelo simulador obedecem ao formato de webhook do Asaas",
           "arquivo": "contract/gateway.test.js",
           "ok": true,
-          "duracao_ms": 6,
+          "duracao_ms": 10,
           "erro": null
         },
         {
           "nome": "CG-04: Receptor aceita os eventos documentados do Asaas e ignora os demais",
           "arquivo": "contract/gateway.test.js",
           "ok": true,
-          "duracao_ms": 320,
+          "duracao_ms": 501,
           "erro": null
         },
         {
           "nome": "CG-05: Pagamento desconhecido não quebra o receptor; repetição é idempotente",
           "arquivo": "contract/gateway.test.js",
           "ok": true,
-          "duracao_ms": 16,
+          "duracao_ms": 22,
           "erro": null
         },
         {
@@ -632,7 +639,7 @@
           "nome": "CT-02: Respostas reais obedecem aos schemas em todo o ciclo de uso",
           "arquivo": "contract/openapi.test.js",
           "ok": true,
-          "duracao_ms": 1626,
+          "duracao_ms": 2255,
           "erro": null
         },
         {
