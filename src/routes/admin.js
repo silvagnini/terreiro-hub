@@ -105,6 +105,57 @@ r.get('/terreiros/:id/exportacao', wrap(async (req, res) => {
   res.json({ exportado_em: new Date().toISOString(), terreiro: t, filhos, cobrancas, despesas, avisos, eventos });
 }));
 
+// Link de nova senha para o sacerdote do terreiro (vale 24 h)
+r.post('/terreiros/:id/link-senha', wrap(async (req, res) => {
+  const s = await db.one(
+    `select u.id, u.nome, u.telefone, u.senha_hash from vinculos v join usuarios u on u.id = v.usuario_id
+      where v.terreiro_id = $1 and v.papel = 'sacerdote' and v.ativo order by v.created_at limit 1`, [req.params.id]
+  );
+  if (!s) throw erro.naoEncontrado('Sacerdote não encontrado');
+  if (!s.senha_hash) throw erro.regra('O sacerdote ainda não aceitou o convite');
+  const { link } = await auth.criarRecuperacao(s.id, { criadoPor: req.usuario.id, canal: 'manual' });
+  res.json({ link, nome: s.nome, expira_em_horas: 24 });
+}));
+
+// ---------- integrações: situação e teste de cada canal ----------
+r.get('/integracoes', wrap(async (_req, res) => {
+  const { situacaoCanais } = require('../services/notificacoes');
+  const { gateway } = require('../gateway');
+  const fila = await db.many(
+    `select canal, status, count(*)::int as n from notificacoes where created_at > now() - interval '7 days' group by canal, status order by canal, status`
+  );
+  const falhas = await db.many(`select canal, erro, created_at from notificacoes where status = 'falhou' order by created_at desc limit 10`);
+  res.json({
+    gateway: { nome: gateway.nome, base: gateway.nome === 'asaas' ? process.env.ASAAS_BASE_URL || 'https://sandbox.asaas.com/api/v3' : null, chave_cifra: Boolean(process.env.CHAVE_CIFRA) },
+    canais: situacaoCanais(), fila_7_dias: fila, ultimas_falhas: falhas,
+  });
+}));
+
+r.post('/integracoes/testar', wrap(async (req, res) => {
+  const canal = campo(req.body, 'canal', { obrigatorio: true, opcoes: ['gateway', 'email', 'whatsapp', 'push'] });
+  const eu = await db.one('select * from usuarios where id = $1', [req.usuario.id]);
+  let resultado;
+  try {
+    if (canal === 'gateway') {
+      const { gateway } = require('../gateway');
+      resultado = await gateway.testar({ cpf: campo(req.body, 'cpf') || '24971563792' });
+    } else {
+      const destino = canal === 'whatsapp' ? campo(req.body, 'telefone') || eu.telefone : canal === 'email' ? campo(req.body, 'email') || eu.email : null;
+      const { CANAIS } = require('../services/notificacoes');
+      const base = { titulo: 'Teste do Terreiro Hub', texto: 'Se você recebeu esta mensagem, o envio está funcionando.', link: (process.env.APP_URL || '') + '/#/admin' };
+      const r1 = canal === 'push' ? await CANAIS.push.enviar({ ...base, usuarioId: eu.id })
+        : canal === 'whatsapp' ? await CANAIS.whatsapp.enviar({ ...base, telefone: require('../util').telefoneNormalizado(destino), nome: eu.nome.split(' ')[0], tipo: 'aviso' })
+          : await CANAIS.email.enviar({ ...base, email: destino });
+      resultado = r1.ignorada ? { ok: false, motivo: r1.ignorada } : { ok: true, destino, detalhe: r1 };
+    }
+  } catch (e) {
+    resultado = { ok: false, motivo: e.message };
+  }
+  console.log(`[integracoes] teste ${canal}:`, JSON.stringify(resultado).slice(0, 2000));
+  await auditar(null, { usuarioId: req.usuario.id, acao: 'teste_integracao', entidade: 'integracao', entidadeId: canal, dados: { ok: resultado.ok } });
+  res.json({ canal, ...resultado });
+}));
+
 // Faturas do SaaS
 r.get('/faturas', wrap(async (req, res) => {
   const { limite, offset } = paginacao(req.query);

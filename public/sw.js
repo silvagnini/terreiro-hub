@@ -1,5 +1,5 @@
 // Service worker: app instalável e mural/agenda consultáveis sem internet (RNF-11)
-const VERSAO = 'th-v1';
+const VERSAO = 'th-v2';
 const SHELL = ['/', '/index.html', '/app.css', '/app.js', '/manifest.webmanifest', '/icons/icon-192.png'];
 const OFFLINE_API = [/\/api\/t\/[^/]+\/avisos/, /\/api\/t\/[^/]+\/eventos\?/, /\/api\/t\/[^/]+\/meu\/inicio/];
 
@@ -36,4 +36,24 @@ self.addEventListener('fetch', (e) => {
       return resp;
     }).catch(() => caches.match(req).then((r) => r || caches.match('/index.html')))
   );
+});
+
+// Notificações no aparelho (Web Push). O texto é neutro: nada de conteúdo religioso na tela bloqueada.
+self.addEventListener('push', (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch { d = { texto: e.data && e.data.text() }; }
+  e.waitUntil(self.registration.showNotification(d.titulo || 'Terreiro Hub', {
+    body: d.texto || 'Você tem uma novidade.', icon: '/icons/icon-192.png', badge: '/icons/icon-192.png',
+    tag: d.tag || undefined, data: { link: d.link || '/' },
+  }));
+});
+
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const alvo = new URL(e.notification.data?.link || '/', self.location.origin).href;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((abas) => {
+    const aba = abas.find((c) => c.url.startsWith(self.location.origin));
+    if (aba) return aba.navigate(alvo).then((c) => (c || aba).focus()).catch(() => aba.focus());
+    return self.clients.openWindow(alvo);
+  }));
 });

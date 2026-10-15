@@ -2,7 +2,7 @@
 const db = require('../db');
 const { gateway } = require('../gateway');
 const { relogio, somarDias, diasEntre, competenciaDe, diasNoMes, dataNaCompetencia } = require('../util');
-const { emitir, aplicarDesconto } = require('./cobrancas');
+const { emitir, aplicarDesconto, reenviarSemGateway } = require('./cobrancas');
 const { auditar, notificar } = require('./base');
 
 // US-22 / RN-04: gera a mensalidade do mês para cada filho ativo e não isento. Idempotente.
@@ -71,10 +71,18 @@ async function faturarSaaS(hoje = relogio.hoje()) {
   let geradas = 0;
   for (const t of terreiros) {
     const vencimento = somarDias(dataNaCompetencia(competencia, t.dia_faturamento), 5);
-    const g = await gateway.criarCobranca({
-      contaId: 'plataforma', valorCentavos: t.preco_centavos, vencimento, descricao: `Assinatura ${competencia}`, referencia: `saas:${t.id}:${competencia}`,
-      pagador: { id: t.id, nome: t.responsavel_nome, telefone: t.telefone, cpf: t.documento, recebedor: 'TERREIRO HUB' },
-    });
+    let g;
+    try {
+      g = await gateway.criarCobranca({
+        contaId: 'plataforma', clienteId: t.gateway_cliente_id, valorCentavos: t.preco_centavos, vencimento, descricao: `Assinatura Terreiro Hub ${competencia}`,
+        referencia: `saas:${t.id}:${competencia}`,
+        pagador: { id: t.id, nome: t.responsavel_nome, telefone: t.telefone, cpf: t.documento, email: t.email, recebedor: 'TERREIRO HUB' },
+      });
+    } catch (e) {
+      console.error(`[faturas] terreiro ${t.id}: ${e.message}`);
+      continue;
+    }
+    if (g.clienteId && g.clienteId !== t.gateway_cliente_id) await db.query('update terreiros set gateway_cliente_id = $2 where id = $1', [t.id, g.clienteId]);
     const ins = await db.one(
       `insert into faturas_saas(terreiro_id, competencia, valor_centavos, vencimento, gateway_id, pix_copia_cola, boleto_linha)
        values ($1,$2,$3,$4,$5,$6,$7) on conflict do nothing returning id`,
@@ -146,7 +154,8 @@ async function rodarTudo(hoje = relogio.hoje()) {
   const regua = await reguaInadimplencia(hoje);
   const mensalidades = await gerarMensalidades(hoje);
   const avisos = await lembretes(hoje);
-  return { hoje, faturas, regua, mensalidades, lembretes: avisos };
+  const pix = await reenviarSemGateway();
+  return { hoje, faturas, regua, mensalidades, lembretes: avisos, reenvio_pix: pix };
 }
 
 module.exports = { valorMensalidade, gerarMensalidades, faturarSaaS, statusPorAtraso, reguaInadimplencia, lembretes, rodarTudo };

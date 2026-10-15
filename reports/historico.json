@@ -33,5 +33,100 @@
       "total": 8,
       "passaram": 8
     }
+  },
+  {
+    "em": "2026-10-15T00:32:15.046Z",
+    "suites": [
+      "unitarios",
+      "integracao",
+      "interface",
+      "contrato"
+    ],
+    "unitarios": {
+      "total": 9,
+      "passaram": 9
+    },
+    "integracao": {
+      "total": 38,
+      "passaram": 38
+    },
+    "interface": {
+      "total": 7,
+      "passaram": 7
+    },
+    "contrato": {
+      "total": 8,
+      "passaram": 7
+    }
+  },
+  {
+    "em": "2026-10-15T00:33:06.376Z",
+    "suites": [
+      "contrato"
+    ],
+    "contrato": {
+      "total": 8,
+      "passaram": 7
+    }
+  },
+  {
+    "em": "2026-10-15T00:33:19.135Z",
+    "suites": [
+      "contrato"
+    ],
+    "contrato": {
+      "total": 8,
+      "passaram": 8
+    }
+  },
+  {
+    "em": "2026-10-15T00:38:41.759Z",
+    "suites": [
+      "unitarios",
+      "integracao",
+      "interface",
+      "contrato"
+    ],
+    "unitarios": {
+      "total": 9,
+      "passaram": 9
+    },
+    "integracao": {
+      "total": 53,
+      "passaram": 53
+    },
+    "interface": {
+      "total": 9,
+      "passaram": 9
+    },
+    "contrato": {
+      "total": 8,
+      "passaram": 8
+    }
+  },
+  {
+    "em": "2026-10-15T00:39:06.459Z",
+    "suites": [
+      "unitarios",
+      "integracao",
+      "interface",
+      "contrato"
+    ],
+    "unitarios": {
+      "total": 9,
+      "passaram": 9
+    },
+    "integracao": {
+      "total": 53,
+      "passaram": 53
+    },
+    "interface": {
+      "total": 9,
+      "passaram": 9
+    },
+    "contrato": {
+      "total": 8,
+      "passaram": 8
+    }
   }
 ]

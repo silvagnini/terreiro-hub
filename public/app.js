@@ -203,9 +203,111 @@
         <div class="campo"><label for="id">E-mail ou telefone</label><input id="id" name="identificador" type="text" autocomplete="username" required></div>
         <div class="campo"><label for="senha">Senha</label><input id="senha" name="senha" type="password" autocomplete="current-password" required></div>
         <button class="btn bloco" type="submit">Entrar</button>
+        <a href="#/esqueci" style="text-align:center">Esqueci minha senha</a>
         <p class="sutil">Recebeu um convite? Abra o link que chegou no seu WhatsApp ou e-mail.</p>
       </form></div>`;
     aoEnviar($('#f'), async (fd) => entrouCom(await post('/api/auth/login', Object.fromEntries(fd))));
+  }
+
+  function telaEsqueci() {
+    document.body.classList.remove('com-nav');
+    app().innerHTML = html`<div class="entrar">
+      <div class="marca"><img src="/icons/icon-192.png" alt=""><div class="empilha"><h1>Nova senha</h1><span class="sutil">Enviamos um link para você criar outra</span></div></div>
+      <form class="form" id="f">
+        <div class="campo"><label for="id">E-mail ou telefone cadastrado</label><input id="id" name="identificador" type="text" autocomplete="username" required></div>
+        <button class="btn bloco" type="submit">Enviar link</button>
+        <p class="sutil">Pelo e-mail, o link chega por e-mail. Pelo telefone, chega no WhatsApp. Ele vale por 1 hora.</p>
+        <p class="sutil">Não recebeu? Peça ao sacerdote da sua casa um link de nova senha.</p>
+        <a href="#/entrar" style="text-align:center">Voltar para o login</a>
+      </form></div>`;
+    aoEnviar($('#f'), async (fd) => {
+      const r = await post('/api/auth/esqueci', Object.fromEntries(fd));
+      $('#f').innerHTML = html`<div class="cartao info">${r.mensagem}</div><a class="btn sec" href="#/entrar">Voltar para o login</a>`.s;
+    });
+  }
+
+  async function telaRedefinir({ token }) {
+    document.body.classList.remove('com-nav');
+    let info;
+    try { info = await get(`/api/auth/redefinir/${encodeURIComponent(token)}`); } catch (e) {
+      app().innerHTML = html`<div class="entrar"><h1>Link indisponível</h1><div class="cartao erro">${e.message}</div><a class="btn" href="#/esqueci">Pedir outro link</a><a class="btn sec" href="#/entrar">Ir para o login</a></div>`;
+      return;
+    }
+    app().innerHTML = html`<div class="entrar">
+      <div class="marca"><img src="/icons/icon-192.png" alt=""><div class="empilha"><span class="sutil">Olá, ${info.nome}</span><h1>Crie uma nova senha</h1></div></div>
+      <form class="form" id="f">
+        <div class="campo"><label for="s1">Nova senha</label><input id="s1" name="senha" type="password" minlength="8" autocomplete="new-password" required><span class="ajuda">Pelo menos 8 caracteres</span></div>
+        <div class="campo"><label for="s2">Repita a senha</label><input id="s2" name="senha2" type="password" autocomplete="new-password" required></div>
+        <button class="btn bloco" type="submit">Salvar e entrar</button>
+        <p class="sutil">Por segurança, você sai de todos os outros aparelhos.</p>
+      </form></div>`;
+    aoEnviar($('#f'), async (fd) => {
+      if (fd.get('senha') !== fd.get('senha2')) throw new ErroApi(400, { erro: { mensagem: 'As senhas não conferem', detalhes: { campo: 'senha2' } } });
+      const r = await post('/api/auth/redefinir', { token, senha: fd.get('senha') });
+      aviso('Senha alterada');
+      entrouCom(r);
+    });
+  }
+
+  // Seção "Conta e notificações" usada no perfil do filho, nas configurações e no painel do admin
+  const pushSuportado = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+  const iosSemInstalar = () => /iphone|ipad/i.test(navigator.userAgent) && !window.matchMedia('(display-mode: standalone)').matches;
+  function b64ParaBytes(b64) {
+    const p = '='.repeat((4 - (b64.length % 4)) % 4);
+    const bin = atob((b64 + p).replace(/-/g, '+').replace(/_/g, '/'));
+    return Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  }
+  async function inscricaoAtual() {
+    if (!pushSuportado()) return null;
+    const reg = await navigator.serviceWorker.ready;
+    return reg.pushManager.getSubscription();
+  }
+  async function ativarPush() {
+    if (iosSemInstalar()) throw new ErroApi(400, { erro: { mensagem: 'No iPhone, primeiro instale o app: toque em Compartilhar › Adicionar à Tela de Início, e abra por lá.' } });
+    if (!pushSuportado()) throw new ErroApi(400, { erro: { mensagem: 'Este navegador não aceita notificações.' } });
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') throw new ErroApi(400, { erro: { mensagem: 'Notificações bloqueadas. Libere nas configurações do navegador.' } });
+    const { chave_publica: chave } = await get('/api/push/chave');
+    const reg = await navigator.serviceWorker.ready;
+    const sub = (await reg.pushManager.getSubscription()) || (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ParaBytes(chave) }));
+    await post('/api/push/inscricao', { inscricao: sub.toJSON() });
+  }
+  async function desativarPush() {
+    const sub = await inscricaoAtual();
+    if (sub) { await api('DELETE', '/api/push/inscricao', { endpoint: sub.endpoint }); await sub.unsubscribe(); }
+  }
+
+  async function secaoConta() {
+    const [prefs, sub] = await Promise.all([get('/api/auth/preferencias').catch(() => ({})), inscricaoAtual().catch(() => null)]);
+    return html`<section class="secao" id="sec-conta"><h2>Conta e notificações</h2>
+      <div class="cartao empilha" style="gap:10px">
+        <div class="lado"><span class="empilha"><strong>Notificações neste aparelho</strong><span class="sutil">${sub ? 'Ativadas' : pushSuportado() ? 'Desativadas' : 'Não disponíveis neste navegador'}</span></span>
+          ${pushSuportado() || iosSemInstalar() ? html`<button class="btn ${sub ? 'sec' : ''} peq" id="push">${sub ? 'Desativar' : 'Ativar'}</button>` : ''}</div>
+        <label class="alternar" style="padding:0"><span>Receber pelo WhatsApp</span><input type="checkbox" data-pref="whatsapp" ${raw(prefs.whatsapp !== false ? 'checked' : '')}></label>
+        <label class="alternar" style="padding:0"><span>Receber por e-mail</span><input type="checkbox" data-pref="email" ${raw(prefs.email !== false ? 'checked' : '')}></label>
+        <span class="sutil">As mensagens dizem só "você tem um novo aviso", sem o conteúdo.</span>
+      </div>
+      <button class="btn sec" id="trocar-senha">Trocar senha</button></section>`;
+  }
+  function ligarSecaoConta() {
+    $('#push')?.addEventListener('click', async (e) => {
+      try {
+        if (e.target.textContent === 'Desativar') { await desativarPush(); aviso('Notificações desativadas'); } else { await ativarPush(); aviso('Notificações ativadas neste aparelho'); }
+        render(true);
+      } catch (err) { aviso(err.message, true); }
+    });
+    $$('[data-pref]').forEach((c) => c.addEventListener('change', async () => {
+      try { await api('PATCH', '/api/auth/preferencias', { [c.dataset.pref]: c.checked }); aviso('Preferência salva'); } catch (err) { aviso(err.message, true); c.checked = !c.checked; }
+    }));
+    $('#trocar-senha')?.addEventListener('click', () => folha(html`<h2>Trocar senha</h2><form class="form" id="fs">
+        <div class="campo"><label for="sa">Senha atual</label><input id="sa" name="senha_atual" type="password" autocomplete="current-password" required></div>
+        <div class="campo"><label for="sn">Nova senha</label><input id="sn" name="nova_senha" type="password" minlength="8" autocomplete="new-password" required><span class="ajuda">Pelo menos 8 caracteres</span></div>
+        <div class="campo"><label for="sc">Repita a nova senha</label><input id="sc" name="confirma" type="password" autocomplete="new-password" required></div>
+        <button class="btn" type="submit">Salvar nova senha</button><button class="btn sec" type="button" data-fechar>Cancelar</button></form>`, (el, fechar) => aoEnviar($('#fs', el), async (fd) => {
+      if (fd.get('nova_senha') !== fd.get('confirma')) throw new ErroApi(400, { erro: { mensagem: 'As senhas não conferem', detalhes: { campo: 'confirma' } } });
+      const r = await post('/api/auth/senha', { senha_atual: fd.get('senha_atual'), nova_senha: fd.get('nova_senha') });
+      fechar(); aviso(r.mensagem);
+    })));
   }
 
   async function telaConvite({ token }) {
@@ -370,6 +472,7 @@
     if (sac && f.status === 'bloqueado') acoes.push(['desbloquear', 'Desbloquear', 'contorno']);
     if (sac && ['afastado', 'desligado'].includes(f.status)) acoes.push(['reativar', 'Reativar', 'contorno']);
     if (sac && f.status !== 'desligado') acoes.push(['desligar', 'Desligar da casa', 'perigo']);
+    if (sac && f.convite_status === 'ativo' && ['ativo', 'afastado'].includes(f.status)) acoes.push(['link-senha', 'Gerar link de nova senha', 'sec']);
     if (sac) acoes.push(['excluir', 'Excluir a pedido do titular', 'perigo']);
     telaBarra(f.nome_civil, html`
       <div class="cartao g empilha" style="gap:10px">
@@ -412,6 +515,13 @@
       try {
         if (a === 'convite') { const c = await post(T(`/filhos/${id}/convite`)); window.open(c.whatsapp, '_blank', 'noopener'); aviso('Convite gerado (vale 7 dias)'); return render(true); }
         if (a === 'trabalho') { location.hash = `#/trabalho/novo?filho=${id}`; return; }
+        if (a === 'link-senha') {
+          const l = await post(T(`/filhos/${id}/link-senha`));
+          folha(html`<h2>Link de nova senha</h2><p>Vale por ${l.expira_em_horas} horas e só pode ser usado uma vez.</p><div class="pix">${l.link}</div>
+            ${l.whatsapp ? html`<a class="btn" href="${l.whatsapp}" target="_blank" rel="noopener">Enviar pelo WhatsApp</a>` : ''}<button class="btn sec" data-cp>Copiar link</button><button class="btn sec" data-fechar>Fechar</button>`,
+          (el) => $('[data-cp]', el).addEventListener('click', () => navigator.clipboard.writeText(l.link).then(() => aviso('Link copiado'))));
+          return;
+        }
         if (a === 'excluir') {
           if (!(await confirmar('Excluir só se o próprio filho pediu (LGPD). Os dados pessoais serão apagados e o histórico financeiro mantido sem identificação.', { ok: 'Excluir definitivamente', perigo: true }))) return;
           await api('DELETE', T(`/filhos/${id}`), { pedido_do_titular: true }); aviso('Dados anonimizados'); location.hash = '#/filhos'; return;
@@ -804,9 +914,19 @@
           <div class="campo"><label for="n">Nome do titular</label><input id="n" name="nome" type="text" value="${t.responsavel_nome}" required></div>
           <div class="campo"><label for="d">CPF ou CNPJ</label><input id="d" name="documento" type="text" inputmode="numeric" value="${t.documento}" required></div>
           <div class="campo"><label for="e">E-mail</label><input id="e" name="email" type="email" value="${t.email}" required></div>
-          <div class="campo"><label for="tel">Celular</label><input id="tel" name="telefone" type="tel" value="${t.telefone || ''}"></div>
+          <div class="campo"><label for="tel">Celular</label><input id="tel" name="telefone" type="tel" value="${t.telefone || ''}" required></div>
+          <div class="campo" id="c-nasc"><label for="nasc">Data de nascimento do titular</label><input id="nasc" name="nascimento" type="date"></div>
+          <div class="campo" id="c-tipo" hidden><label for="tipo">Tipo de empresa</label><select id="tipo" name="tipo_empresa"><option value="ASSOCIATION">Associação / entidade religiosa</option><option value="MEI">MEI</option><option value="LIMITED">Limitada (Ltda)</option><option value="INDIVIDUAL">Empresário individual</option></select></div>
+          <div class="grade2"><div class="campo"><label for="cep">CEP</label><input id="cep" name="cep" type="text" inputmode="numeric" required></div><div class="campo"><label for="num">Número</label><input id="num" name="numero" type="text" required></div></div>
+          <div class="campo"><label for="end">Endereço</label><input id="end" name="endereco" type="text" value="${t.endereco || ''}" required></div>
+          <div class="campo"><label for="bai">Bairro</label><input id="bai" name="bairro" type="text" required></div>
+          <p class="sutil">Esses dados vão para o banco parceiro abrir a conta, que passa por análise.</p>
           <button class="btn" type="submit">Enviar para análise</button></form>` : ''}`, { voltar: '#/config' });
-      if ($('#f')) aoEnviar($('#f'), async (fd) => { await post(T('/conta-recebimento'), Object.fromEntries(fd)); S.terreiro = null; aviso('Enviado para análise'); render(true); });
+      if ($('#f')) {
+        const tipoDoc = () => { const cnpj = $('#d').value.replace(/\D/g, '').length === 14; $('#c-nasc').hidden = cnpj; $('#c-tipo').hidden = !cnpj; };
+        $('#d').addEventListener('input', tipoDoc); tipoDoc();
+        aoEnviar($('#f'), async (fd) => { await post(T('/conta-recebimento'), Object.fromEntries([...fd].filter(([, v]) => v))); S.terreiro = null; aviso('Enviado para análise'); render(true); });
+      }
       return;
     }
     const [servicos, grupos, auxiliares, entidades] = await Promise.all([
@@ -839,6 +959,7 @@
             <div class="chips">${[['filhos', 'Filhos'], ['mural', 'Mural'], ['agenda', 'Agenda'], ['financeiro', 'Financeiro'], ['despesas', 'Despesas'], ['dashboard', 'Painel']].map(([k, l]) => html`<button class="chip" aria-pressed="${a.permissoes[k] !== false && (a.permissoes[k] || ['filhos', 'mural', 'agenda'].includes(k))}" data-aux="${a.id}" data-perm="${k}">${l}</button>`)}</div></div>`)}</div>
           <form class="cartao form" id="fa"><div class="campo"><label for="an">Nome</label><input id="an" name="nome" type="text" required></div><div class="campo"><label for="ae">E-mail</label><input id="ae" name="email" type="email" required></div><button class="btn peq" type="submit">Convidar auxiliar</button></form></section>
         <section class="secao"><h2>Suporte</h2><button class="btn sec" id="suporte">Liberar acesso do suporte por 24h</button></section>` : ''}
+      ${await secaoConta()}
       <button class="btn perigo" id="sair">Sair</button>`, { voltar: '#/' });
     $$('[data-pular]').forEach((b) => (b.onclick = async () => { await post(T('/onboarding'), { etapa: b.dataset.pular, situacao: b.textContent.includes('feito') ? 'feita' : 'pulada' }); S.terreiro = null; render(true); }));
     if ($('#fc')) aoEnviar($('#fc'), async (fd) => {
@@ -859,6 +980,7 @@
       render(true);
     });
     $('#suporte')?.addEventListener('click', async () => { await post(T('/assinatura/consentir-suporte'), { horas: 24 }); aviso('Suporte liberado por 24 horas'); });
+    ligarSecaoConta();
     $('#sair').onclick = () => sair();
   }
 
@@ -894,7 +1016,9 @@
       <div class="cartao g empilha" style="gap:6px"><div class="lado"><span>Valor</span><span class="grande">${brl(c.valor_final_centavos)}</span></div>${c.desconto_centavos ? html`<div class="sutil">Desconto de ${brl(c.desconto_centavos)} já aplicado</div>` : ''}<div class="lado"><span>Vencimento</span><strong>${dataBR(c.vencimento)}</strong></div><div>${seloSituacao(c.situacao)}</div></div>
       ${['aberta'].includes(c.status) && c.pix_copia_cola ? html`<section class="secao"><h2>Pix copia e cola</h2><p class="sutil">Abra o app do seu banco, escolha Pix › Copia e cola e cole o código.</p><div class="pix" id="pix">${c.pix_copia_cola}</div><button class="btn bloco" id="copiar">Copiar código Pix</button></section>
         ${c.boleto_linha ? html`<section class="secao"><h2>Boleto</h2><div class="pix">${c.boleto_linha}</div><button class="btn sec bloco" id="copiarB">Copiar linha do boleto</button></section>` : ''}
+        ${c.link_pagamento ? html`<a class="btn sec bloco" href="${c.link_pagamento}" target="_blank" rel="noopener">Pagar com cartão ou ver o boleto</a>` : ''}
         <p class="sutil">Assim que o banco confirmar, o pagamento aparece aqui como pago e você recebe o recibo.</p>` : ''}
+      ${c.status === 'aberta' && c.pix_pendente ? html`<div class="cartao alerta">O Pix desta cobrança ainda está sendo gerado. Tente de novo em alguns minutos.</div>` : ''}
       ${recibo ? html`<section class="cartao g empilha" style="gap:6px"><span class="rotulo">Recibo nº ${recibo.numero}</span><div>${recibo.terreiro}</div><div>Recebemos de <strong>${recibo.pagador}</strong> o valor de <strong>${brl(recibo.valor_centavos)}</strong> referente a ${recibo.descricao}.</div><div class="sutil">Pago em ${new Date(recibo.pago_em).toLocaleString('pt-BR', { timeZone: TZ })} · ${recibo.forma_pagamento}</div><button class="btn sec peq" onclick="window.print()">Imprimir ou salvar</button></section>` : ''}`, { voltar: '#/pagamentos' });
     $('#copiar')?.addEventListener('click', () => navigator.clipboard.writeText(c.pix_copia_cola).then(() => aviso('Código Pix copiado')));
     $('#copiarB')?.addEventListener('click', () => navigator.clipboard.writeText(c.boleto_linha).then(() => aviso('Linha copiada')));
@@ -913,8 +1037,10 @@
         <label class="alternar"><span class="empilha"><strong>Usar meus dados religiosos</strong><span class="sutil">Desligar apaga orixás, guias e obrigações</span></span><input type="checkbox" id="rel" ${raw(p.consentimento_religioso ? 'checked' : '')}></label>
         <button class="btn perigo" id="excluir">Pedir exclusão dos meus dados</button>
         <span class="sutil">Termo aceito em ${p.consentimento_em ? new Date(p.consentimento_em).toLocaleDateString('pt-BR') : '—'} (versão ${p.consentimento_versao || '—'})</span></section>
+      ${await secaoConta()}
       ${S.vinculos.length > 1 ? html`<a class="btn sec" href="#/escolher">Trocar de casa</a>` : ''}
       <button class="btn perigo" id="sair">Sair</button></main>`);
+    ligarSecaoConta();
     aoEnviar($('#f'), async (fd) => { await api('PATCH', T('/meu/perfil'), Object.fromEntries([...fd].map(([k, v]) => [k, v || null]))); aviso('Perfil salvo'); });
     $('#baixar').onclick = async () => {
       const d = await get(T('/meu/dados'));
@@ -933,7 +1059,7 @@
   // ---------------- admin da plataforma (US-01 a US-05) ----------------
   async function telaAdmin() {
     const busca = sessionStorage.getItem('th_abusca') || '';
-    const [m, t, planos] = await Promise.all([get('/api/admin/metricas'), get(`/api/admin/terreiros?limite=100${busca ? '&busca=' + encodeURIComponent(busca) : ''}`), get('/api/admin/planos')]);
+    const [m, t, planos, integ] = await Promise.all([get('/api/admin/metricas'), get(`/api/admin/terreiros?limite=100${busca ? '&busca=' + encodeURIComponent(busca) : ''}`), get('/api/admin/planos'), get('/api/admin/integracoes')]);
     const ST = { teste: 'roxo', ativo: 'verde', aviso: 'ambar', somente_leitura: 'ambar', bloqueado: 'vermelho', encerrado: 'cinza' };
     document.body.classList.remove('com-nav');
     app().innerHTML = html`<header class="topo"><div class="casa">Painel da plataforma</div><div class="linha"><h1>Terreiros</h1><button class="btn peq" id="novo">+ Terreiro</button></div></header>
@@ -944,6 +1070,12 @@
         <input type="text" id="busca" placeholder="Buscar nome ou CPF/CNPJ" value="${busca}" aria-label="Buscar terreiro">
         <div class="lista">${t.itens.map((x) => html`<button class="item" data-t="${x.id}"><span class="corpo"><strong>${x.nome}</strong><span class="sutil">${x.plano || '—'} · ${x.filhos_ativos} filhos · ${x.responsavel_nome}</span></span><span class="selo ${ST[x.status]}">${x.status.replace('_', ' ')}</span></button>`)}</div>
         <section class="secao"><h2>Planos</h2><div class="lista">${planos.map((p) => html`<div class="item"><span class="corpo"><strong>${p.nome}</strong><span class="sutil">${p.limite_filhos ? `até ${p.limite_filhos} filhos` : 'ilimitado'}</span></span><strong>${brl(p.preco_centavos)}</strong></div>`)}</div></section>
+        <section class="secao"><h2>Integrações</h2><div class="lista">
+          <div class="item"><span class="corpo"><strong>Pagamentos · ${integ.gateway.nome === 'asaas' ? 'Asaas' : 'simulado'}</strong><span class="sutil">${integ.gateway.base || 'nenhuma cobrança real'}</span></span><button class="btn sec peq" data-testar="gateway">Testar</button></div>
+          ${['whatsapp', 'email', 'push'].map((k) => html`<div class="item"><span class="corpo"><strong>${{ whatsapp: 'WhatsApp', email: 'E-mail', push: 'Notificação no aparelho' }[k]}</strong><span class="sutil">${integ.canais[k].ativo ? '' : 'Desligado · '}${integ.canais[k].observacao}</span></span>${integ.canais[k].ativo ? html`<button class="btn sec peq" data-testar="${k}">Testar</button>` : html`<span class="selo cinza">Configurar</span>`}</div>`)}
+        </div>
+        ${integ.ultimas_falhas.length ? html`<details class="cartao"><summary>Últimas falhas de envio (${integ.ultimas_falhas.length})</summary>${integ.ultimas_falhas.map((f) => html`<div class="sutil" style="margin-top:6px">${f.canal} · ${new Date(f.created_at).toLocaleString('pt-BR', { timeZone: TZ })} · ${f.erro}</div>`)}</details>` : ''}</section>
+        ${await secaoConta()}
         <button class="btn sec" id="rotinas">Rodar rotinas agora</button>
         ${S.vinculos.length ? html`<a class="btn sec" href="#/escolher">Ir para um terreiro</a>` : ''}
         <button class="btn perigo" id="sair">Sair</button>
@@ -951,6 +1083,21 @@
     let tm;
     $('#busca').addEventListener('input', (e) => { clearTimeout(tm); tm = setTimeout(() => { sessionStorage.setItem('th_abusca', e.target.value); render(true); }, 350); });
     $('#sair').onclick = () => sair();
+    ligarSecaoConta();
+    $$('[data-testar]').forEach((b) => (b.onclick = async () => {
+      const canal = b.dataset.testar;
+      let extra = {};
+      if (canal === 'whatsapp') { const tel = prompt('Número para o teste (com DDD):', S.usuario.telefone || ''); if (!tel) return; extra = { telefone: tel }; }
+      if (canal === 'push' && !(await inscricaoAtual())) { try { await ativarPush(); } catch (e) { return aviso(e.message, true); } }
+      b.disabled = true; b.textContent = 'Testando…';
+      try {
+        const r = await post('/api/admin/integracoes/testar', { canal, ...extra });
+        folha(html`<h2>Teste · ${canal}</h2><div class="cartao ${r.ok ? 'info' : 'erro'}">${r.ok ? 'Funcionou.' : 'Falhou: ' + (r.motivo || 'veja os passos abaixo')}</div>
+          ${r.passos ? html`<div class="lista">${r.passos.map((p) => html`<div class="item"><span class="corpo"><strong>${p.ok ? '✓' : '✕'} ${p.passo}</strong><span class="sutil">${typeof p.detalhe === 'string' ? p.detalhe : JSON.stringify(p.detalhe)}</span></span></div>`)}</div>` : ''}
+          ${r.destino ? html`<p class="sutil">Enviado para ${r.destino}.</p>` : ''}<button class="btn sec" data-fechar>Fechar</button>`);
+      } catch (e) { aviso(e.message, true); }
+      b.disabled = false; b.textContent = 'Testar';
+    }));
     $('#rotinas').onclick = async () => { const r = await post('/api/admin/rotinas/rodar'); aviso(`Faturas: ${r.faturas.geradas} · Mensalidades: ${r.mensalidades.geradas} · Mudanças de status: ${r.regua.mudancas.length}`); render(true); };
     $('#novo').onclick = () => folha(html`<h2>Novo terreiro</h2><form class="form" id="fn">
       <div class="campo"><label for="tn">Nome do terreiro</label><input id="tn" name="nome" type="text" required></div>
@@ -972,9 +1119,18 @@
         <div class="cartao empilha" style="gap:4px"><div>${x.responsavel_nome} · ${x.email}</div><div class="sutil">Documento ${x.documento} · criado em ${new Date(x.created_at).toLocaleDateString('pt-BR')}</div>${x.motivo_bloqueio ? html`<div class="sutil">Motivo: ${x.motivo_bloqueio}</div>` : ''}</div>
         <h3>Faturas</h3><div class="lista">${x.faturas.map((f) => html`<div class="lado"><span>${f.competencia} · ${brl(f.valor_centavos)}</span><span class="selo ${f.status === 'paga' ? 'verde' : f.vencimento < hoje() ? 'ambar' : 'cinza'}">${f.status}</span></div>`)}${x.faturas.length ? '' : html`<span class="sutil">Nenhuma fatura.</span>`}</div>
         <div class="lista">${['bloqueado', 'encerrado'].includes(x.status) ? html`<button class="btn contorno" data-a="desbloquear">Desbloquear</button>` : html`<button class="btn perigo" data-a="bloquear">Bloquear</button>`}
-          ${x.status !== 'encerrado' ? html`<button class="btn perigo" data-a="encerrar">Encerrar</button>` : ''}<button class="btn sec" data-a="exportar">Exportar dados</button><button class="btn sec" data-fechar>Fechar</button></div>`, (el, fechar) => {
+          ${x.status !== 'encerrado' ? html`<button class="btn perigo" data-a="encerrar">Encerrar</button>` : ''}<button class="btn sec" data-a="exportar">Exportar dados</button><button class="btn sec" data-a="link-senha">Link de nova senha do sacerdote</button><button class="btn sec" data-fechar>Fechar</button></div>`, (el, fechar) => {
         $$('[data-a]', el).forEach((a) => (a.onclick = async () => {
           const ac = a.dataset.a;
+          if (ac === 'link-senha') {
+            try {
+              const l = await post(`/api/admin/terreiros/${x.id}/link-senha`);
+              fechar();
+              folha(html`<h2>Link para ${l.nome}</h2><p>Vale por ${l.expira_em_horas} horas, uso único.</p><div class="pix">${l.link}</div><button class="btn" data-cp>Copiar link</button><button class="btn sec" data-fechar>Fechar</button>`,
+                (el2) => $('[data-cp]', el2).addEventListener('click', () => navigator.clipboard.writeText(l.link).then(() => aviso('Link copiado'))));
+            } catch (e) { aviso(e.message, true); }
+            return;
+          }
           if (ac === 'exportar') { const d = await get(`/api/admin/terreiros/${x.id}/exportacao`); const l = document.createElement('a'); l.href = URL.createObjectURL(new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' })); l.download = `terreiro-${x.id}.json`; l.click(); return; }
           fechar();
           const m = ac === 'desbloquear' ? true : await confirmar(ac === 'bloquear' ? 'Bloquear este terreiro?' : 'Encerrar este terreiro? A exportação fica disponível por 90 dias.', { motivo: ac === 'bloquear', perigo: true, ok: ac === 'bloquear' ? 'Bloquear' : 'Encerrar' });
@@ -987,7 +1143,7 @@
 
   // ---------------- roteador ----------------
   const ROTAS = [
-    ['/entrar', telaEntrar, 'publico'], ['/convite/:token', telaConvite, 'publico'], ['/escolher', telaEscolher, 'logado'], ['/admin', telaAdmin, 'admin'],
+    ['/entrar', telaEntrar, 'publico'], ['/convite/:token', telaConvite, 'publico'], ['/esqueci', telaEsqueci, 'publico'], ['/redefinir/:token', telaRedefinir, 'publico'], ['/escolher', telaEscolher, 'logado'], ['/admin', telaAdmin, 'admin'],
     ['/', { staff: telaInicioSacerdote, filho: telaInicioFilho }], ['/filhos', telaFilhos, 'staff'], ['/filhos/novo', telaNovoFilho, 'staff'], ['/filhos/:id', telaFilho, 'staff'],
     ['/financeiro', telaFinanceiro, 'staff'], ['/cobranca/nova', telaNovaCobranca, 'staff'], ['/mensalidade', telaMensalidade, 'staff'], ['/trabalho/novo', telaNovoTrabalho, 'staff'],
     ['/agenda', telaAgenda], ['/agenda/novo', telaNovoEvento, 'staff'], ['/gira/:id', telaGira, 'staff'], ['/buzios', telaBuzios],

@@ -1,9 +1,9 @@
 {
-  "gerado_em": "2026-10-12T14:43:23.528Z",
-  "operacoes_documentadas": 104,
-  "operacoes_exercitadas": 104,
+  "gerado_em": "2026-10-15T00:39:29.850Z",
+  "operacoes_documentadas": 117,
+  "operacoes_exercitadas": 117,
   "cobertura_percentual": 100,
-  "respostas_validadas": 145,
+  "respostas_validadas": 168,
   "violacoes": [],
   "nao_exercitadas": []
 }

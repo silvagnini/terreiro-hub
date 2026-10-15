@@ -45,12 +45,17 @@ module.exports = {
 
   async criarSubconta({ nome, documento, email }) {
     if (!nome || !documento || !email) throw new Error('Dados da subconta incompletos');
-    return { id: id('acc'), status: 'PENDING', apiKey: '$aact_sim_' + crypto.randomBytes(12).toString('hex') };
+    return { id: id('acc'), walletId: crypto.randomUUID(), status: 'PENDING', apiKey: '$aact_sim_' + crypto.randomBytes(12).toString('hex') };
   },
 
-  async criarCobranca({ contaId, valorCentavos, vencimento, descricao, referencia, pagador }) {
-    if (!contaId) throw new Error('Conta de recebimento não informada');
+  async criarChavePix() {
+    return { id: crypto.randomUUID(), type: 'EVP' };
+  },
+
+  async criarCobranca({ apiKey, contaId, clienteId, valorCentavos, vencimento, descricao, referencia, pagador }) {
+    if (!apiKey && !contaId) throw new Error('Conta de recebimento não informada');
     if (!(valorCentavos > 0)) throw new Error('Valor inválido');
+    if (globalThis.__falharGatewaySimulado) throw new Error('Gateway simulado fora do ar');
     const gatewayId = id('pay');
     return {
       id: gatewayId,
@@ -59,7 +64,9 @@ module.exports = {
       vencimento,
       descricao,
       externalReference: referencia,
-      pixCopiaCola: pixCopiaCola({ chave: contaId, nome: pagador?.recebedor || 'TERREIRO', cidade: 'SAO PAULO', valorCentavos, txid: gatewayId.replace(/[^a-zA-Z0-9]/g, '') }),
+      clienteId: clienteId || id('cus'),
+      linkPagamento: `https://sandbox.asaas.com/i/${gatewayId.slice(4)}`,
+      pixCopiaCola: pixCopiaCola({ chave: contaId || 'acc_simulado', nome: pagador?.recebedor || 'TERREIRO', cidade: 'SAO PAULO', valorCentavos, txid: gatewayId.replace(/[^a-zA-Z0-9]/g, '') }),
       boletoLinha: linhaDigitavel(valorCentavos, vencimento),
     };
   },
@@ -70,6 +77,10 @@ module.exports = {
 
   async estornarCobranca(gatewayId) {
     return { id: gatewayId, status: 'REFUNDED' };
+  },
+
+  async testar() {
+    return { ok: true, base: 'simulado', passos: [{ passo: 'Gateway simulado (nenhuma cobrança real)', ok: true, detalhe: 'ok' }] };
   },
 
   // Monta o corpo de webhook no formato do Asaas (usado pelo simulador e pelos testes de contrato)

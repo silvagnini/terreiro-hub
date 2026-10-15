@@ -21,7 +21,7 @@ describe('Contrato · Gateway de pagamento (formato Asaas)', () => {
   after(h.descer);
 
   it('CG-01: Adaptador simulado e Asaas expõem a mesma interface', () => {
-    const iface = ['criarSubconta', 'criarCobranca', 'cancelarCobranca', 'estornarCobranca'];
+    const iface = ['criarSubconta', 'criarChavePix', 'criarCobranca', 'cancelarCobranca', 'estornarCobranca', 'testar'];
     for (const f of iface) {
       assert.equal(typeof simulado[f], 'function', `simulado.${f}`);
       assert.equal(typeof asaas[f], 'function', `asaas.${f}`);

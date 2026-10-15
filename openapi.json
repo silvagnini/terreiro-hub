@@ -1678,6 +1678,15 @@
               "null"
             ]
           },
+          "link_pagamento": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "pix_pendente": {
+            "type": "boolean"
+          },
           "pago_em": {
             "type": [
               "string",
@@ -1705,6 +1714,8 @@
           "origem",
           "pix_copia_cola",
           "boleto_linha",
+          "link_pagamento",
+          "pix_pendente",
           "pago_em",
           "recibo_numero"
         ]
@@ -2314,6 +2325,154 @@
           "recebido"
         ]
       },
+      "Mensagem": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "mensagem": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ok",
+          "mensagem"
+        ]
+      },
+      "RedefinirInfo": {
+        "type": "object",
+        "properties": {
+          "nome": {
+            "type": "string"
+          },
+          "expira_em": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "nome",
+          "expira_em"
+        ]
+      },
+      "Preferencias": {
+        "type": "object",
+        "properties": {
+          "push": {
+            "type": "boolean"
+          },
+          "whatsapp": {
+            "type": "boolean"
+          },
+          "email": {
+            "type": "boolean"
+          }
+        },
+        "required": []
+      },
+      "ChavePush": {
+        "type": "object",
+        "properties": {
+          "chave_publica": {
+            "type": "string",
+            "minLength": 40
+          }
+        },
+        "required": [
+          "chave_publica"
+        ]
+      },
+      "LinkSenha": {
+        "type": "object",
+        "properties": {
+          "link": {
+            "type": "string",
+            "pattern": "#/redefinir/"
+          },
+          "expira_em_horas": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "link",
+          "expira_em_horas"
+        ]
+      },
+      "Integracoes": {
+        "type": "object",
+        "properties": {
+          "gateway": {
+            "type": "object",
+            "properties": {
+              "nome": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "nome"
+            ]
+          },
+          "canais": {
+            "type": "object",
+            "properties": {
+              "push": {
+                "type": "object"
+              },
+              "whatsapp": {
+                "type": "object"
+              },
+              "email": {
+                "type": "object"
+              }
+            },
+            "required": [
+              "push",
+              "whatsapp",
+              "email"
+            ]
+          },
+          "fila_7_dias": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "ultimas_falhas": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": [
+          "gateway",
+          "canais",
+          "fila_7_dias",
+          "ultimas_falhas"
+        ]
+      },
+      "TesteIntegracao": {
+        "type": "object",
+        "properties": {
+          "canal": {
+            "type": "string",
+            "enum": [
+              "gateway",
+              "email",
+              "whatsapp",
+              "push"
+            ]
+          },
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "canal",
+          "ok"
+        ]
+      },
       "AsaasWebhookPagamento": {
         "type": "object",
         "properties": {
@@ -2778,6 +2937,650 @@
             }
           },
           "401": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/senha": {
+      "post": {
+        "summary": "Trocar a própria senha (desconecta outros aparelhos)",
+        "tags": [
+          "Autenticação"
+        ],
+        "operationId": "postAuthSenha",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mensagem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/esqueci": {
+      "post": {
+        "summary": "Pedir link de nova senha (e-mail ou WhatsApp)",
+        "tags": [
+          "Autenticação"
+        ],
+        "operationId": "postAuthEsqueci",
+        "security": [],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Mensagem"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/redefinir/{token}": {
+      "get": {
+        "summary": "Validar link de nova senha",
+        "tags": [
+          "Autenticação"
+        ],
+        "operationId": "getAuthRedefinirToken",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RedefinirInfo"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/redefinir": {
+      "post": {
+        "summary": "Criar nova senha pelo link",
+        "tags": [
+          "Autenticação"
+        ],
+        "operationId": "postAuthRedefinir",
+        "security": [],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Sessao"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/preferencias": {
+      "get": {
+        "summary": "Canais de notificação do usuário",
+        "tags": [
+          "Notificações"
+        ],
+        "operationId": "getAuthPreferencias",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Preferencias"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Ligar/desligar canais de notificação (RF-61)",
+        "tags": [
+          "Notificações"
+        ],
+        "operationId": "patchAuthPreferencias",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Preferencias"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/push/chave": {
+      "get": {
+        "summary": "Chave pública VAPID do Web Push",
+        "tags": [
+          "Notificações"
+        ],
+        "operationId": "getPushChave",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChavePush"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/push/inscricao": {
+      "post": {
+        "summary": "Registrar este aparelho para notificações",
+        "tags": [
+          "Notificações"
+        ],
+        "operationId": "postPushInscricao",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Ok"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remover este aparelho",
+        "tags": [
+          "Notificações"
+        ],
+        "operationId": "deletePushInscricao",
+        "responses": {
+          "204": {
+            "description": "Sem conteúdo"
+          },
+          "401": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/terreiros/{id}/link-senha": {
+      "post": {
+        "summary": "Link de nova senha para o sacerdote",
+        "tags": [
+          "Admin"
+        ],
+        "operationId": "postAdminTerreirosIdLinkSenha",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkSenha"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/integracoes": {
+      "get": {
+        "summary": "Situação do gateway e dos canais de envio",
+        "tags": [
+          "Admin"
+        ],
+        "operationId": "getAdminIntegracoes",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Integracoes"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/integracoes/testar": {
+      "post": {
+        "summary": "Testar gateway, e-mail, WhatsApp ou push",
+        "tags": [
+          "Admin"
+        ],
+        "operationId": "postAdminIntegracoesTestar",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TesteIntegracao"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/t/{tid}/filhos/{id}/link-senha": {
+      "post": {
+        "summary": "Link de nova senha para um filho (gerado pelo sacerdote)",
+        "tags": [
+          "Filhos"
+        ],
+        "operationId": "postTTidFilhosIdLinkSenha",
+        "parameters": [
+          {
+            "name": "tid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LinkSenha"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Erro",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Erro"
+                }
+              }
+            }
+          },
+          "422": {
             "description": "Erro",
             "content": {
               "application/json": {

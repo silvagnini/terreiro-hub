@@ -3,6 +3,7 @@ const db = require('../db');
 const { gateway } = require('../gateway');
 const { erro, relogio } = require('../util');
 const { auditar, notificar } = require('./base');
+const { decifrar } = require('../cifra');
 
 function aplicarDesconto(valorCentavos, desconto) {
   if (!desconto || !desconto.valor) return 0;
@@ -20,23 +21,56 @@ const publicoCobranca = (c, hoje = relogio.hoje()) => ({
   id: c.id, filho_id: c.filho_id, filho_nome: c.filho_nome, consulente: c.consulente, descricao: c.descricao,
   valor_centavos: c.valor_centavos, desconto_centavos: c.desconto_centavos, valor_final_centavos: c.valor_centavos - c.desconto_centavos,
   vencimento: c.vencimento, status: c.status, situacao: situacao(c, hoje), origem: c.origem, competencia: c.competencia, lote_id: c.lote_id,
-  trabalho_id: c.trabalho_id, parcela: c.parcela, parcelas: c.parcelas, pix_copia_cola: c.pix_copia_cola, boleto_linha: c.boleto_linha,
+  trabalho_id: c.trabalho_id, parcela: c.parcela, parcelas: c.parcelas, pix_copia_cola: c.pix_copia_cola, boleto_linha: c.boleto_linha, link_pagamento: c.link_pagamento || null, pix_pendente: c.status === 'aberta' && !c.gateway_id,
   gateway_id: c.gateway_id, pago_em: c.pago_em, forma_pagamento: c.forma_pagamento, motivo: c.motivo, recibo_numero: c.recibo_numero, created_at: c.created_at,
 });
 
-async function enviarAoGateway(q, terreiro, cobranca, filho) {
-  const g = await gateway.criarCobranca({
-    contaId: terreiro.gateway_conta_id,
-    valorCentavos: cobranca.valor_centavos - cobranca.desconto_centavos,
-    vencimento: cobranca.vencimento,
-    descricao: cobranca.descricao,
-    referencia: cobranca.id,
-    pagador: { id: filho?.id, nome: filho?.nome_civil || cobranca.consulente?.nome || 'Consulente', telefone: filho?.telefone, cpf: filho?.cpf, recebedor: terreiro.nome },
-  });
-  return q.one(
-    `update cobrancas set status = 'aberta', gateway_id = $2, pix_copia_cola = $3, boleto_linha = $4 where id = $1 returning *`,
-    [cobranca.id, g.id, g.pixCopiaCola, g.boletoLinha]
+// Chave de API da subconta do terreiro (Asaas); o simulado não precisa
+function credenciais(terreiro) {
+  return { apiKey: terreiro.gateway_api_key ? decifrar(terreiro.gateway_api_key) : undefined, contaId: terreiro.gateway_conta_id };
+}
+
+// Envia a cobrança ao gateway. Se o gateway falhar, a cobrança fica "aberta" sem Pix e com o erro
+// registrado; a rotina horária tenta de novo (reenviarSemGateway). Com `estrito`, a falha sobe.
+async function enviarAoGateway(q, terreiro, cobranca, filho, { estrito = false } = {}) {
+  try {
+    const g = await gateway.criarCobranca({
+      ...credenciais(terreiro),
+      clienteId: filho?.gateway_cliente_id || null,
+      valorCentavos: cobranca.valor_centavos - cobranca.desconto_centavos,
+      vencimento: cobranca.vencimento,
+      descricao: cobranca.descricao,
+      referencia: cobranca.id,
+      pagador: { id: filho?.id, nome: filho?.nome_civil || cobranca.consulente?.nome || 'Consulente', telefone: filho?.telefone || cobranca.consulente?.telefone, cpf: filho?.cpf, email: filho?.email, recebedor: terreiro.nome },
+    });
+    if (filho && g.clienteId && g.clienteId !== filho.gateway_cliente_id) {
+      await q.query('update filhos set gateway_cliente_id = $2 where id = $1', [filho.id, g.clienteId]);
+      filho.gateway_cliente_id = g.clienteId;
+    }
+    return q.one(
+      `update cobrancas set status = 'aberta', gateway_id = $2, pix_copia_cola = $3, boleto_linha = $4, link_pagamento = $5, gateway_erro = null where id = $1 returning *`,
+      [cobranca.id, g.id, g.pixCopiaCola, g.boletoLinha, g.linkPagamento || null]
+    );
+  } catch (e) {
+    if (estrito) throw e;
+    console.warn(`[gateway] cobrança ${cobranca.id} sem Pix: ${e.message}`);
+    return q.one(`update cobrancas set status = 'aberta', gateway_erro = $2 where id = $1 returning *`, [cobranca.id, String(e.message).slice(0, 500)]);
+  }
+}
+
+// Rotina: tenta de novo as cobranças abertas que ficaram sem Pix/boleto por falha do gateway
+async function reenviarSemGateway(limite = 200) {
+  const pend = await db.many(
+    `select c.*, row_to_json(f) as filho, row_to_json(t) as terreiro from cobrancas c
+       join terreiros t on t.id = c.terreiro_id left join filhos f on f.id = c.filho_id
+      where c.status = 'aberta' and c.gateway_id is null and t.gateway_conta_status = 'aprovada' order by c.created_at limit $1`, [limite]
   );
+  let ok = 0;
+  for (const c of pend) {
+    const r = await enviarAoGateway(db, c.terreiro, c, c.filho);
+    if (r.gateway_id) ok++;
+  }
+  return { tentadas: pend.length, geradas: ok };
 }
 
 // Cria UMA cobrança. Sem conta de recebimento aprovada ela fica "aguardando_conta" (US-07).
@@ -76,6 +110,8 @@ async function liberarAguardando(terreiroId) {
   return pendentes.length;
 }
 
+const terreiroDe = (q, id) => q.one('select * from terreiros where id = $1', [id]);
+
 async function buscar(q, terreiroId, id) {
   const c = await q.one('select * from cobrancas where id = $1 and terreiro_id = $2', [id, terreiroId]);
   if (!c) throw erro.naoEncontrado('Cobrança não encontrada');
@@ -86,7 +122,7 @@ async function baixaManual(terreiroId, id, { data, forma = 'dinheiro', comprovan
   return db.tx(async (t) => {
     const c = await buscar(t, terreiroId, id);
     if (!['aberta', 'aguardando_conta'].includes(c.status)) throw erro.regra(`Não é possível dar baixa: cobrança ${c.status}`);
-    if (c.gateway_id) await gateway.cancelarCobranca(c.gateway_id);
+    if (c.gateway_id) await gateway.cancelarCobranca(c.gateway_id, credenciais(await terreiroDe(t, terreiroId)));
     const r = await t.one(
       `update cobrancas set status = 'paga', pago_em = ($2::date + time '12:00') at time zone 'America/Sao_Paulo', forma_pagamento = $3,
               comprovante_url = $4, recibo_numero = nextval('recibos_seq') where id = $1 returning *`,
@@ -103,7 +139,7 @@ async function cancelar(terreiroId, id, motivo, usuarioId) {
     const c = await buscar(t, terreiroId, id);
     if (c.status === 'paga') throw erro.regra('Cobrança paga não pode ser cancelada nem excluída. Use o estorno.');
     if (!['aberta', 'aguardando_conta'].includes(c.status)) throw erro.regra(`Cobrança já está ${c.status}`);
-    if (c.gateway_id) await gateway.cancelarCobranca(c.gateway_id);
+    if (c.gateway_id) await gateway.cancelarCobranca(c.gateway_id, credenciais(await terreiroDe(t, terreiroId)));
     const r = await t.one(`update cobrancas set status = 'cancelada', motivo = $2 where id = $1 returning *`, [id, motivo]);
     await auditar(t, { terreiroId, usuarioId, acao: 'cancelamento', entidade: 'cobranca', entidadeId: id, dados: { motivo } });
     return r;
@@ -115,7 +151,7 @@ async function estornar(terreiroId, id, motivo, usuarioId) {
   return db.tx(async (t) => {
     const c = await buscar(t, terreiroId, id);
     if (c.status !== 'paga') throw erro.regra('Só cobranças pagas podem ser estornadas');
-    if (c.gateway_id && c.forma_pagamento !== 'dinheiro') await gateway.estornarCobranca(c.gateway_id);
+    if (c.gateway_id && c.forma_pagamento !== 'dinheiro') await gateway.estornarCobranca(c.gateway_id, credenciais(await terreiroDe(t, terreiroId)));
     const r = await t.one(`update cobrancas set status = 'estornada', motivo = $2 where id = $1 returning *`, [id, motivo]);
     await auditar(t, { terreiroId, usuarioId, acao: 'estorno', entidade: 'cobranca', entidadeId: id, dados: { motivo, valor: c.valor_centavos } });
     return r;
@@ -153,4 +189,4 @@ async function registrarPagamento(evento) {
   });
 }
 
-module.exports = { aplicarDesconto, situacao, publicoCobranca, emitir, liberarAguardando, baixaManual, cancelar, estornar, registrarPagamento, buscar };
+module.exports = { aplicarDesconto, situacao, publicoCobranca, reenviarSemGateway, credenciais, enviarAoGateway, emitir, liberarAguardando, baixaManual, cancelar, estornar, registrarPagamento, buscar };

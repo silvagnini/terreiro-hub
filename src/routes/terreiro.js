@@ -3,8 +3,9 @@ const express = require('express');
 const db = require('../db');
 const auth = require('../auth');
 const { gateway } = require('../gateway');
-const { erro, wrap, campo, documentoValido, telefoneNormalizado, relogio, diasEntre, paginacao } = require('../util');
-const { auditar } = require('../services/base');
+const { erro, wrap, campo, documentoValido, telefoneNormalizado, soDigitos, relogio, diasEntre, paginacao } = require('../util');
+const { cifrar } = require('../cifra');
+const { auditar, notificar } = require('../services/base');
 const { gerarConvite } = require('../services/terreiros');
 
 const r = express.Router({ mergeParams: true });
@@ -58,17 +59,38 @@ r.post('/onboarding', sacerdote, wrap(async (req, res) => {
   res.json({ ...t.onboarding, etapas: ETAPAS, concluido: ETAPAS.every((e) => t.onboarding[e] === 'feita') });
 }));
 
-// US-07: conta de recebimento (subconta no gateway)
+// US-07: conta de recebimento (subconta no gateway). A chave da subconta é guardada cifrada.
 r.post('/conta-recebimento', sacerdote, wrap(async (req, res) => {
   const t = req.terreiro;
   if (t.gateway_conta_status === 'aprovada') throw erro.regra('A conta de recebimento já está aprovada');
-  const documento = documentoValido(campo(req.body, 'documento', { obrigatorio: true }));
+  if (t.gateway_conta_status === 'pendente') throw erro.regra('A conta de recebimento já está em análise');
+  const b = req.body;
+  const documento = documentoValido(campo(b, 'documento', { obrigatorio: true }));
   if (!documento) throw erro.validacao('CPF ou CNPJ inválido', { campo: 'documento' });
-  const sub = await gateway.criarSubconta({
-    nome: campo(req.body, 'nome', { obrigatorio: true, max: 120 }), documento,
-    email: campo(req.body, 'email', { obrigatorio: true, max: 160 }), telefone: telefoneNormalizado(campo(req.body, 'telefone')),
-  });
-  await db.query(`update terreiros set gateway_conta_id = $2, gateway_conta_status = 'pendente', onboarding = onboarding || '{"conta_recebimento":"feita"}' where id = $1`, [t.id, sub.id]);
+  const cnpj = documento.length === 14;
+  const dados = {
+    nome: campo(b, 'nome', { obrigatorio: true, max: 120 }), documento,
+    email: campo(b, 'email', { obrigatorio: true, max: 160 }), telefone: telefoneNormalizado(campo(b, 'telefone')),
+    nascimento: cnpj ? undefined : campo(b, 'nascimento', { tipo: 'date' }),
+    tipoEmpresa: cnpj ? campo(b, 'tipo_empresa', { opcoes: ['MEI', 'LIMITED', 'INDIVIDUAL', 'ASSOCIATION'] }) || 'ASSOCIATION' : undefined,
+    cep: soDigitos(campo(b, 'cep', { max: 9 })) || undefined, endereco: campo(b, 'endereco', { max: 200 }),
+    numero: campo(b, 'numero', { max: 20 }), bairro: campo(b, 'bairro', { max: 100 }),
+  };
+  if (gateway.nome === 'asaas') {
+    const faltam = ['telefone', 'cep', 'endereco', 'numero', 'bairro', ...(cnpj ? [] : ['nascimento'])].filter((k) => !dados[k]);
+    if (faltam.length) throw erro.validacao(`Para abrir a conta de recebimento preencha: ${faltam.join(', ')}`, { campo: faltam[0] });
+  }
+  let sub;
+  try {
+    sub = await gateway.criarSubconta(dados);
+  } catch (e) {
+    throw erro.regra(`O banco recusou a abertura da conta: ${e.message}`);
+  }
+  await db.query(
+    `update terreiros set gateway_conta_id = $2, gateway_wallet_id = $3, gateway_api_key = $4, gateway_conta_status = 'pendente',
+            onboarding = onboarding || '{"conta_recebimento":"feita"}' where id = $1`,
+    [t.id, sub.id, sub.walletId || null, sub.apiKey ? cifrar(sub.apiKey) : null]
+  );
   await auditar(null, { terreiroId: t.id, usuarioId: req.usuario.id, acao: 'conta_recebimento_solicitada', entidade: 'terreiro', entidadeId: t.id });
   res.status(201).json({ gateway_conta_id: sub.id, gateway_conta_status: 'pendente' });
 }));
@@ -165,6 +187,7 @@ r.post('/auxiliares', sacerdote, wrap(async (req, res) => {
     if (ja) throw erro.conflito('Esta pessoa já tem acesso a este terreiro');
     const v = await q.one(`insert into vinculos(usuario_id, terreiro_id, papel, permissoes) values ($1,$2,'auxiliar',$3) returning *`, [u.id, req.terreiro.id, permissoes]);
     const convite = u.senha_hash ? null : await gerarConvite(q, v.id);
+    if (convite && u.email) await notificar(q, { terreiroId: req.terreiro.id, usuarioId: u.id, tipo: 'convite', referencia: v.id, canais: ['email'], link: convite.link });
     await auditar(q, { terreiroId: req.terreiro.id, usuarioId: req.usuario.id, acao: 'auxiliar_criado', entidade: 'vinculo', entidadeId: v.id, dados: { permissoes } });
     return { id: v.id, nome, permissoes, convite };
   });

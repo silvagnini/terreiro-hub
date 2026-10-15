@@ -12,34 +12,53 @@ async function auditar(exec, { terreiroId = null, usuarioId = null, acao, entida
 
 // US-18 / Melhoria 7: notificações com texto neutro, sem termos religiosos na tela bloqueada.
 const TEXTO_NEUTRO = {
-  aviso: { titulo: 'Novo aviso', texto: 'Você tem um novo aviso. Abra o app para ver.' },
-  cobranca: { titulo: 'Nova cobrança', texto: 'Você tem um novo pagamento disponível no app.' },
-  lembrete: { titulo: 'Lembrete', texto: 'Você tem um pagamento próximo do vencimento.' },
-  atraso: { titulo: 'Pagamento pendente', texto: 'Há um pagamento em aberto no app.' },
-  recibo: { titulo: 'Pagamento confirmado', texto: 'Recebemos seu pagamento. O recibo está no app.' },
-  compromisso: { titulo: 'Lembrete de compromisso', texto: 'Você tem um compromisso em breve. Veja no app.' },
+  aviso: { titulo: 'Novo aviso', texto: 'Você tem um novo aviso. Abra o app para ver.', caminho: '#/mural' },
+  cobranca: { titulo: 'Nova cobrança', texto: 'Você tem um novo pagamento disponível no app.', caminho: '#/pagamentos' },
+  lembrete: { titulo: 'Lembrete', texto: 'Você tem um pagamento próximo do vencimento.', caminho: '#/pagamentos' },
+  atraso: { titulo: 'Pagamento pendente', texto: 'Há um pagamento em aberto no app.', caminho: '#/pagamentos' },
+  recibo: { titulo: 'Pagamento confirmado', texto: 'Recebemos seu pagamento. O recibo está no app.', caminho: '#/pagamentos' },
+  compromisso: { titulo: 'Lembrete de compromisso', texto: 'Você tem um compromisso em breve. Veja no app.', caminho: '#/agenda' },
+  convite: { titulo: 'Seu convite para o app', texto: 'Você recebeu um convite para acessar o app da sua casa. Crie sua senha pelo link.', caminho: '#/' },
+  senha: { titulo: 'Redefinir sua senha', texto: 'Recebemos um pedido para redefinir sua senha. O link vale por 1 hora. Se não foi você, ignore esta mensagem.', caminho: '#/' },
 };
 
-async function notificar(exec, { terreiroId, filhoIds = [], usuarioId = null, tipo, referencia = null, canais = ['push'] }) {
+const appUrl = () => (process.env.APP_URL || 'http://localhost:8080').replace(/\/$/, '');
+
+// Enfileira a notificação; o despachante (services/notificacoes) envia por push, WhatsApp ou e-mail.
+async function notificar(exec, { terreiroId = null, filhoIds = [], usuarioId = null, tipo, referencia = null, canais = ['push'], link = null }) {
   const q = exec || db;
   const msg = TEXTO_NEUTRO[tipo] || TEXTO_NEUTRO.aviso;
+  const url = link || `${appUrl()}/${msg.caminho}`;
+  const ref = ['convite', 'senha'].includes(tipo) ? `${tipo}:${referencia || ''}` : referencia;
   if (usuarioId) {
     for (const canal of canais) {
       await q.query(
-        `insert into notificacoes(terreiro_id, usuario_id, canal, titulo, texto, referencia, enviada_em) values ($1,$2,$3,$4,$5,$6, now())`,
-        [terreiroId, usuarioId, canal, msg.titulo, msg.texto, referencia]
+        `insert into notificacoes(terreiro_id, usuario_id, canal, titulo, texto, referencia, link) values ($1,$2,$3,$4,$5,$6,$7)`,
+        [terreiroId, usuarioId, canal, msg.titulo, msg.texto, ref, url]
       );
     }
   }
   if (filhoIds.length) {
     for (const canal of canais) {
       await q.query(
-        `insert into notificacoes(terreiro_id, filho_id, canal, titulo, texto, referencia, enviada_em)
-         select $1, f, $2, $3, $4, $5, now() from unnest($6::uuid[]) f`,
-        [terreiroId, canal, msg.titulo, msg.texto, referencia, filhoIds]
+        `insert into notificacoes(terreiro_id, filho_id, canal, titulo, texto, referencia, link)
+         select $1, f, $2, $3, $4, $5, $6 from unnest($7::uuid[]) f`,
+        [terreiroId, canal, msg.titulo, msg.texto, ref, url, filhoIds]
       );
     }
   }
+  if (usuarioId || filhoIds.length) agendarDespacho();
 }
 
-module.exports = { auditar, notificar, TEXTO_NEUTRO };
+// Dispara o despachante logo depois do commit (desligado nos testes, que chamam despachar() direto)
+let timer = null;
+function agendarDespacho() {
+  if (process.env.RODAR_ROTINAS === 'false' || timer) return;
+  timer = setTimeout(() => {
+    timer = null;
+    require('./notificacoes').despachar().catch((e) => console.error('[notificacoes]', e.message));
+  }, 1500);
+  timer.unref?.();
+}
+
+module.exports = { auditar, notificar, TEXTO_NEUTRO, appUrl };

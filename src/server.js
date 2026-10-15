@@ -12,6 +12,9 @@ const PLANOS_PADRAO = [
 
 async function preparar() {
   await db.migrate();
+  if (process.env.NODE_ENV === 'production' && require('./gateway').gateway.nome === 'asaas' && !process.env.CHAVE_CIFRA) {
+    throw new Error('Com GATEWAY=asaas é obrigatório definir CHAVE_CIFRA (32 bytes em base64)');
+  }
   if (!(await db.one('select 1 from planos limit 1'))) {
     for (const [nome, preco, limite, recursos] of PLANOS_PADRAO) {
       await db.query('insert into planos(nome, preco_centavos, limite_filhos, recursos) values ($1,$2,$3,$4)', [nome, preco, limite, recursos]);
@@ -39,6 +42,9 @@ async function iniciar(porta = Number(process.env.PORT || 8080)) {
     const rodar = () => jobs.rodarTudo().then((r) => console.log('[rotinas]', JSON.stringify(r))).catch((e) => console.error('[rotinas] erro', e));
     setTimeout(rodar, 10e3).unref();
     setInterval(rodar, 60 * 60e3).unref();
+    // fila de notificações: a cada minuto (retentativas e o que não foi disparado na hora)
+    const { despachar } = require('./services/notificacoes');
+    setInterval(() => despachar().catch((e) => console.error('[notificacoes]', e.message)), 60e3).unref();
   }
   console.log(`[terreiro-hub] ouvindo na porta ${server.address().port}`);
   return server;

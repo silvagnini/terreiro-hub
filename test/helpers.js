@@ -66,8 +66,9 @@ function gerarCpf(n) {
   return d.join('');
 }
 
-let seq = 0;
-const unico = () => ++seq + Math.floor(Math.random() * 1e5);
+// contador com base aleatória: único dentro do arquivo de teste (o banco é recriado por arquivo)
+let seq = Math.floor(Math.random() * 1e6);
+const unico = () => ++seq;
 
 const tokenDoLink = (link) => link.split('/convite/')[1];
 
@@ -114,6 +115,7 @@ async function pagarNoSimulador(gatewayId, forma = 'PIX') {
 }
 
 module.exports = {
+  unico,
   subir, descer, req, cliente, loginAdmin, terreiroPronto, novoFilho, filhoComAcesso, pagarNoSimulador, tokenDoLink, gerarCpf, telefone,
   db, relogio, simulado, get base() { return base; },
 };

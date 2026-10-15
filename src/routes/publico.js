@@ -4,8 +4,8 @@ const db = require('../db');
 const auth = require('../auth');
 const { gateway, WEBHOOK_TOKEN, simulado } = require('../gateway');
 const { erro, wrap, campo, sha256, relogio } = require('../util');
-const { registrarPagamento, liberarAguardando } = require('../services/cobrancas');
-const { auditar } = require('../services/base');
+const { registrarPagamento, liberarAguardando, credenciais } = require('../services/cobrancas');
+const { auditar, notificar } = require('../services/base');
 const { reguaInadimplencia } = require('../services/jobs');
 
 const TERMO_VERSAO = '1.0';
@@ -30,6 +30,79 @@ r.post('/auth/logout', auth.autenticar, wrap(async (req, res) => {
 
 r.get('/auth/eu', auth.autenticar, wrap(async (req, res) => {
   res.json({ usuario: req.usuario, vinculos: await vinculosDo(req.usuario.id) });
+}));
+
+// ---------- senha ----------
+r.post('/auth/senha', auth.autenticar, wrap(async (req, res) => {
+  await auth.trocarSenha(req.usuario.id, req.body.senha_atual, req.body.nova_senha, req.sessao.tokenHash);
+  res.json({ ok: true, mensagem: 'Senha alterada. Os outros aparelhos foram desconectados.' });
+}));
+
+// Sempre responde igual, exista ou não a conta (não revela quem está cadastrado)
+r.post('/auth/esqueci', wrap(async (req, res) => {
+  const resposta = { ok: true, mensagem: 'Se houver uma conta com esse dado, enviamos um link para criar uma nova senha.' };
+  const id = String(req.body?.identificador || '').trim().toLowerCase();
+  if (!id) throw erro.validacao('Informe seu e-mail ou telefone', { campo: 'identificador' });
+  const dig = id.replace(/\D/g, '');
+  const tel = !id.includes('@') && dig.length >= 10 ? (dig.length <= 11 ? '55' + dig : dig) : null;
+  const u = await db.one('select id, email, telefone from usuarios where lower(email) = $1 or telefone = $2', [id, tel]);
+  if (!u || !(await db.one('select 1 from usuarios where id = $1 and senha_hash is not null', [u.id]))) return res.status(202).json(resposta);
+  const recentes = await db.one(`select count(*)::int as n from recuperacoes_senha where usuario_id = $1 and criado_por is null and created_at > now() - interval '1 hour'`, [u.id]);
+  if (recentes.n >= 3) return res.status(202).json(resposta);
+  // pedido por e-mail → e-mail; por telefone → WhatsApp; senão o canal que existir
+  const canal = id.includes('@') && u.email ? 'email' : u.telefone ? 'whatsapp' : 'email';
+  const { link } = await auth.criarRecuperacao(u.id, { canal });
+  await notificar(null, { usuarioId: u.id, tipo: 'senha', referencia: u.id, canais: [canal], link });
+  res.status(202).json(resposta);
+}));
+
+r.get('/auth/redefinir/:token', wrap(async (req, res) => {
+  const rec = await auth.recuperacaoValida(req.params.token);
+  res.json({ nome: rec.nome.split(' ')[0], expira_em: rec.expira_em });
+}));
+
+r.post('/auth/redefinir', wrap(async (req, res) => {
+  const usuarioId = await auth.redefinirSenha(req.body?.token, req.body?.senha);
+  const token = await auth.criarSessao(usuarioId);
+  const u = await db.one('select * from usuarios where id = $1', [usuarioId]);
+  res.json({ token, usuario: auth.publico(u), vinculos: await vinculosDo(usuarioId) });
+}));
+
+// ---------- preferências de notificação (RF-61) ----------
+r.get('/auth/preferencias', auth.autenticar, wrap(async (req, res) => {
+  const u = await db.one('select preferencias from usuarios where id = $1', [req.usuario.id]);
+  const aparelhos = await db.one('select count(*)::int as n from push_inscricoes where usuario_id = $1', [req.usuario.id]);
+  res.json({ ...u.preferencias, aparelhos_push: aparelhos.n });
+}));
+
+r.patch('/auth/preferencias', auth.autenticar, wrap(async (req, res) => {
+  const p = {};
+  for (const k of ['push', 'whatsapp', 'email']) if (k in (req.body || {})) p[k] = campo(req.body, k, { tipo: 'bool' });
+  const u = await db.one('update usuarios set preferencias = preferencias || $2 where id = $1 returning preferencias', [req.usuario.id, p]);
+  res.json(u.preferencias);
+}));
+
+// ---------- Web Push ----------
+r.get('/push/chave', wrap(async (_req, res) => {
+  res.json({ chave_publica: (await require('../canais/push').chaves()).publicKey });
+}));
+
+r.post('/push/inscricao', auth.autenticar, wrap(async (req, res) => {
+  const s = campo(req.body, 'inscricao', { obrigatorio: true, tipo: 'object' });
+  const endpoint = campo(s, 'endpoint', { obrigatorio: true, max: 2000 });
+  if (!/^https:\/\//.test(endpoint)) throw erro.validacao('Endpoint inválido');
+  const keys = campo(s, 'keys', { obrigatorio: true, tipo: 'object' });
+  await db.query(
+    `insert into push_inscricoes(endpoint, usuario_id, p256dh, auth, user_agent) values ($1,$2,$3,$4,$5)
+     on conflict (endpoint) do update set usuario_id = excluded.usuario_id, p256dh = excluded.p256dh, auth = excluded.auth, falhas = 0`,
+    [endpoint, req.usuario.id, campo(keys, 'p256dh', { obrigatorio: true, max: 200 }), campo(keys, 'auth', { obrigatorio: true, max: 100 }), String(req.get('user-agent') || '').slice(0, 300)]
+  );
+  res.status(201).json({ ok: true });
+}));
+
+r.delete('/push/inscricao', auth.autenticar, wrap(async (req, res) => {
+  await db.query('delete from push_inscricoes where usuario_id = $1 and endpoint = $2', [req.usuario.id, String(req.body?.endpoint || '')]);
+  res.status(204).end();
 }));
 
 async function vinculosDo(usuarioId) {
@@ -129,11 +202,18 @@ r.post('/webhooks/gateway', wrap(async (req, res) => {
     );
     if (!novo) return res.json({ recebido: true, duplicado: true });
     const aprovada = ev.event.endsWith('APPROVED');
+    const contaId = ev.accountStatus?.id || ev.account?.id;
     const t = await db.one(
-      `update terreiros set gateway_conta_status = $2 where gateway_conta_id = $1 returning id`, [ev.accountStatus?.id, aprovada ? 'aprovada' : 'recusada']
+      `update terreiros set gateway_conta_status = $2 where (gateway_conta_id = $1 or gateway_wallet_id = $1) and gateway_conta_status <> 'aprovada' returning *`,
+      [contaId, aprovada ? 'aprovada' : 'recusada']
     );
     let liberadas = 0;
-    if (t && aprovada) liberadas = await liberarAguardando(t.id);
+    if (t && aprovada) {
+      // chave Pix aleatória na subconta: sem ela o Asaas não gera QR Code
+      await gateway.criarChavePix(credenciais(t).apiKey).catch((e) => console.warn('[asaas] chave Pix:', e.message));
+      liberadas = await liberarAguardando(t.id);
+    }
+    if (t) await auditar(null, { terreiroId: t.id, acao: aprovada ? 'conta_recebimento_aprovada' : 'conta_recebimento_recusada', entidade: 'terreiro', entidadeId: t.id });
     return res.json({ recebido: true, terreiro: t?.id || null, liberadas });
   }
   res.json({ recebido: true, ignorado: true });

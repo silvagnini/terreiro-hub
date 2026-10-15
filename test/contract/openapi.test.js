@@ -248,15 +248,45 @@ describe('Contrato · OpenAPI', () => {
     await fil.get(T('/filhos'));
     await sac.get(T('/meu/inicio'));
 
+    // senha, preferências, push e integrações
+    await sac.post('/auth/senha', { senha_atual: 'errada', nova_senha: 'nova-senha-123' });
+    await sac.post('/auth/senha', { senha_atual: 'senha-forte-1', nova_senha: 'nova-senha-123' });
+    await anon.post('/auth/esqueci', { identificador: 'contrato@teste.dev' });
+    await anon.post('/auth/esqueci', {});
+    const lk = await admin.post(`/admin/terreiros/${tid}/link-senha`);
+    await admin.post('/admin/terreiros/00000000-0000-0000-0000-000000000000/link-senha');
+    const tk = lk.body.link.split('/redefinir/')[1];
+    await anon.get(`/auth/redefinir/${tk}`);
+    await anon.get('/auth/redefinir/invalido');
+    await anon.post('/auth/redefinir', { token: tk, senha: '123' });
+    const red = await anon.post('/auth/redefinir', { token: tk, senha: 'senha-forte-1' });
+    const sac2 = C(red.body.token);
+    await anon.post('/auth/redefinir', { token: tk, senha: 'senha-forte-2' });
+    await sac2.get(T(`/filhos/${f1.body.id}`));
+    await sac2.post(T(`/filhos/${f1.body.id}/link-senha`));
+    await sac2.post(T(`/filhos/${f2.body.id}/link-senha`));
+    await fil.get('/auth/preferencias');
+    await fil.patch('/auth/preferencias', { whatsapp: false });
+    await fil.patch('/auth/preferencias', { whatsapp: 'talvez' });
+    await anon.get('/push/chave');
+    await fil.post('/push/inscricao', { inscricao: { endpoint: 'https://push.exemplo.dev/abc', keys: { p256dh: 'BExemplo', auth: 'xyz' } } });
+    await fil.post('/push/inscricao', { inscricao: { endpoint: 'http://inseguro' , keys: {} } });
+    await fil.del('/push/inscricao', { endpoint: 'https://push.exemplo.dev/abc' });
+    await admin.get('/admin/integracoes');
+    await admin.post('/admin/integracoes/testar', { canal: 'gateway' });
+    await admin.post('/admin/integracoes/testar', { canal: 'email' });
+    await admin.post('/admin/integracoes/testar', { canal: 'fax' });
+    await sac2.get('/admin/integracoes');
+
     // admin: ciclo de vida do terreiro
     await admin.post('/admin/rotinas/rodar', {});
     await admin.post(`/admin/terreiros/${tid}/bloquear`, { motivo: 'teste' });
-    await sac.get(T());
+    await sac2.get(T());
     await admin.post(`/admin/terreiros/${tid}/desbloquear`);
     await admin.post(`/admin/terreiros/${tid}/encerrar`);
     await admin.get(`/admin/terreiros/${tid}/exportacao`);
     await admin.get('/admin/terreiros/00000000-0000-0000-0000-000000000000');
-    await sac.post('/auth/logout');
+    await sac2.post('/auth/logout');
 
     assert.deepEqual(falhas, [], 'violações de contrato');
   });

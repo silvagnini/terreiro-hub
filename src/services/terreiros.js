@@ -59,7 +59,7 @@ async function criarTerreiro(q, body, adminId) {
   if (!usuario.senha_hash) {
     await q.query('update vinculos set usuario_id = $2 where id = $1', [vinculo.id, usuario.id]);
     convite = await gerarConvite(q, vinculo.id);
-    await notificar(q, { terreiroId: t.id, usuarioId: usuario.id, tipo: 'aviso', canais: ['email'] });
+    await notificar(q, { terreiroId: t.id, usuarioId: usuario.id, tipo: 'convite', referencia: vinculo.id, canais: ['email'], link: convite.link });
   }
   await auditar(q, { terreiroId: t.id, usuarioId: adminId, acao: 'terreiro_criado', entidade: 'terreiro', entidadeId: t.id });
   return { terreiro: t, convite };

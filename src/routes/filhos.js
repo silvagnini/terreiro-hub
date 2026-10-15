@@ -3,7 +3,8 @@ const express = require('express');
 const db = require('../db');
 const auth = require('../auth');
 const { erro, wrap, campo, telefoneNormalizado, soDigitos, cpfValido, paginacao, relogio } = require('../util');
-const { auditar } = require('../services/base');
+const { auditar, notificar } = require('../services/base');
+const { criarRecuperacao } = require('../auth');
 const { gerarConvite, linkWhatsApp } = require('../services/terreiros');
 
 const r = express.Router({ mergeParams: true });
@@ -169,8 +170,19 @@ r.post('/:id/convite', podeFilhos, wrap(async (req, res) => {
   const v = await db.one(`select id from vinculos where filho_id = $1 and papel = 'filho'`, [f.id]);
   const convite = await gerarConvite(db, v.id, 7);
   await db.query(`update filhos set convite_status = 'convidado' where id = $1`, [f.id]);
+  if (f.email) await notificar(null, { terreiroId: req.terreiro.id, filhoIds: [f.id], tipo: 'convite', referencia: v.id, canais: ['email'], link: convite.link });
   const texto = `Olá, ${f.nome_civil.split(' ')[0]}! Este é o seu convite para o app da casa ${req.terreiro.nome}. Crie sua senha aqui: ${convite.link}`;
   res.json({ link: convite.link, whatsapp: linkWhatsApp(f.telefone, texto), expira_em_dias: 7, convite_status: 'convidado' });
+}));
+
+// Link de nova senha gerado pelo sacerdote (filho sem e-mail, ou que perdeu o acesso ao WhatsApp)
+r.post('/:id/link-senha', sacerdote, wrap(async (req, res) => {
+  const f = await buscarFilho(db, req.terreiro.id, req.params.id);
+  if (!f.usuario_id || f.convite_status !== 'ativo') throw erro.regra('Este filho ainda não criou o acesso. Reenvie o convite.');
+  if (f.status !== 'ativo' && f.status !== 'afastado') throw erro.regra(`Filho ${f.status} não pode receber link de senha`);
+  const { link } = await criarRecuperacao(f.usuario_id, { criadoPor: req.usuario.id, canal: 'manual' });
+  const texto = `Olá, ${f.nome_civil.split(' ')[0]}! Use este link para criar uma nova senha no app da casa (vale por 24 horas): ${link}`;
+  res.json({ link, whatsapp: f.telefone ? linkWhatsApp(f.telefone, texto) : null, expira_em_horas: 24 });
 }));
 
 // US-13 / US-14: bloquear, desligar, reativar

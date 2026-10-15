@@ -145,4 +145,34 @@ describe('Interface (PWA) · telas renderizam e fluxos principais funcionam', ()
     assert.ok(await esperar(() => t2.doc.querySelector('#app').textContent.includes('Próximo compromisso') || t2.doc.querySelector('#app').textContent.includes('Avisos novos')), 'filho entra após aceitar');
     t2.fechar();
   });
+  it('UI-08: Esqueci a senha e link de nova senha levam o filho de volta ao app', async () => {
+    const t = abrir('#/esqueci');
+    await esperar(() => t.doc.querySelector('#f'));
+    await enviar(t, t.doc.querySelector('#f'), { identificador: 'ninguem@teste.dev' });
+    assert.ok(await esperar(() => t.doc.querySelector('#app').textContent.includes('Voltar para o login')), 'mensagem genérica aparece');
+    t.fechar();
+    const l = await ctx.sac.post(`/api/t/${ctx.tid}/filhos/${filho.filho.id}/link-senha`);
+    assert.equal(l.status, 200);
+    const t2 = abrir(`#/redefinir/${l.body.link.split('/redefinir/')[1]}`);
+    await esperar(() => t2.doc.querySelector('#f'));
+    await enviar(t2, t2.doc.querySelector('#f'), { senha: 'senha-trocada-9', senha2: 'senha-trocada-9' });
+    assert.ok(await esperar(() => /Próximo compromisso|Avisos novos/.test(t2.doc.querySelector('#app').textContent)), 'filho entra após redefinir');
+    const txt = await irPara(t2, '#/perfil');
+    assert.ok(txt.includes('Conta e notificações') && txt.includes('Trocar senha'));
+    t2.fechar();
+    const t3 = abrir('#/redefinir/token-invalido');
+    assert.ok(await esperar(() => t3.doc.querySelector('#app').textContent.includes('Link indisponível')));
+    t3.fechar();
+  });
+
+  it('UI-09: Admin vê as integrações e o sacerdote vê a conta nas configurações', async () => {
+    const t = abrir('#/admin', admin.token);
+    const txt = await irPara(t, '#/admin');
+    assert.ok(txt.includes('Integrações') && txt.includes('simulado'));
+    t.fechar();
+    const t2 = abrir('#/config', ctx.sac.token, ctx.tid);
+    const c = await irPara(t2, '#/config');
+    assert.ok(c.includes('Conta e notificações'));
+    t2.fechar();
+  });
 });

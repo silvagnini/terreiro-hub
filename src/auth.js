@@ -143,7 +143,61 @@ function exigir(...papeisOuPermissao) {
   };
 }
 
+// ---------- troca e recuperação de senha ----------
+const RECUPERACAO_MIN = 60;
+
+async function trocarSenha(usuarioId, senhaAtual, novaSenha, tokenHashAtual) {
+  validarSenha(novaSenha);
+  const u = await db.one('select * from usuarios where id = $1', [usuarioId]);
+  if (!conferirSenha(String(senhaAtual || ''), u.senha_hash)) throw erro.validacao('Senha atual incorreta', { campo: 'senha_atual' });
+  if (senhaAtual === novaSenha) throw erro.validacao('A nova senha precisa ser diferente da atual', { campo: 'nova_senha' });
+  await db.tx(async (t) => {
+    await t.query('update usuarios set senha_hash = $2, senha_alterada_em = now() where id = $1', [usuarioId, hashSenha(novaSenha)]);
+    // encerra as outras sessões (outros aparelhos); mantém a atual
+    await t.query('delete from sessoes where usuario_id = $1 and token_hash <> $2', [usuarioId, tokenHashAtual || '']);
+    await t.query(`insert into auditoria(usuario_id, acao, entidade, entidade_id) values ($1::uuid, 'senha_trocada', 'usuario', $1::text)`, [usuarioId]);
+  });
+}
+
+// Cria um link de redefinição. `criadoPor` = quem gerou (admin/sacerdote) ou null (o próprio usuário).
+async function criarRecuperacao(usuarioId, { criadoPor = null, canal = null } = {}) {
+  const token = tokenAleatorio(24);
+  await db.query(
+    `insert into recuperacoes_senha(token_hash, usuario_id, expira_em, criado_por, canal) values ($1,$2, now() + ($3 || ' minutes')::interval, $4, $5)`,
+    [sha256(token), usuarioId, String(criadoPor ? 24 * 60 : RECUPERACAO_MIN), criadoPor, canal]
+  );
+  await db.query(`insert into auditoria(usuario_id, acao, entidade, entidade_id, dados) values ($1, 'senha_link_gerado', 'usuario', $2, $3)`,
+    [criadoPor || usuarioId, usuarioId, { canal, por_terceiro: Boolean(criadoPor) }]);
+  return { token, link: `${(process.env.APP_URL || 'http://localhost:8080').replace(/\/$/, '')}/#/redefinir/${token}` };
+}
+
+async function recuperacaoValida(token) {
+  const r = await db.one(
+    `select r.*, u.nome, u.email, u.telefone from recuperacoes_senha r join usuarios u on u.id = r.usuario_id where r.token_hash = $1`,
+    [sha256(String(token || ''))]
+  );
+  if (!r) throw erro.naoEncontrado('Link inválido');
+  if (r.usada_em) throw erro.regra('Este link já foi usado. Peça um novo.', { usado: true });
+  if (new Date(r.expira_em) < new Date()) throw erro.regra('Este link expirou. Peça um novo.', { expirado: true });
+  return r;
+}
+
+async function redefinirSenha(token, novaSenha) {
+  validarSenha(novaSenha);
+  const r = await recuperacaoValida(token);
+  await db.tx(async (t) => {
+    const marcado = await t.one('update recuperacoes_senha set usada_em = now() where token_hash = $1 and usada_em is null returning usuario_id', [r.token_hash]);
+    if (!marcado) throw erro.regra('Este link já foi usado. Peça um novo.');
+    await t.query('update usuarios set senha_hash = $2, senha_alterada_em = now(), tentativas_login = 0, bloqueado_ate = null where id = $1', [r.usuario_id, hashSenha(novaSenha)]);
+    await t.query('delete from sessoes where usuario_id = $1', [r.usuario_id]);
+    await t.query('update recuperacoes_senha set usada_em = now() where usuario_id = $1 and usada_em is null', [r.usuario_id]);
+    await t.query(`insert into auditoria(usuario_id, acao, entidade, entidade_id) values ($1::uuid, 'senha_redefinida', 'usuario', $1::text)`, [r.usuario_id]);
+  });
+  return r.usuario_id;
+}
+
 module.exports = {
+  trocarSenha, criarRecuperacao, recuperacaoValida, redefinirSenha,
   hashSenha, conferirSenha, validarSenha, criarSessao, login, autenticar, exigirAdmin, carregarTerreiro, exigir,
   publico, PERMISSOES_AUXILIAR_PADRAO,
 };
